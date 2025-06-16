@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.njwi_ficonnect.R // Make sure this points to your app's R file
-import com.example.njwi_ficonnect.presentation.navigation.HomeScreen // Import your bottom navigation bar
+import com.example.njwi_ficonnect.presentation.navigation.BottomNavigationBar// Import your bottom navigation bar
 
 // Re-using colors
 val PrimaryBlue = Color(0xFF4A90E2)
@@ -53,7 +53,7 @@ data class WifiPackage(
     val isMostPopular: Boolean = false,
     val category: String // "Hourly", "Daily", "Weekly+", "All"
 )
-
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun PackagesScreen(
     onNavigateToConfirmPurchase: (
@@ -133,7 +133,7 @@ fun PackagesScreen(
 
     val filteredPackages = remember(selectedTab) {
         when (selectedTab) {
-            "All Packages" -> allPackages
+            "Packages" -> allPackages
             "Hourly" -> allPackages.filter { it.category == "Hourly" }
             "Daily" -> allPackages.filter { it.category == "Daily" }
             "Weekly+" -> allPackages.filter { it.category == "Weekly+" }
@@ -142,14 +142,14 @@ fun PackagesScreen(
     }
 
     Scaffold(
-//        topBar = {
-//            TopAppBar(
-//                title = { Text("All Packages", color = Color.Black) },
-//                colors = TopAppBarDefaults.topAppBarColors(
-//                    containerColor = Color.White
-//                )
-//            )
-//        },
+        topBar = {
+            TopAppBar(
+                title = { Text("All Packages", color = Color.Black) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFFB8ECA9)
+                )
+            )
+        },
         bottomBar = {
             BottomNavigationBar(
                 onNavigateToHome = onNavigateToHome,
@@ -170,14 +170,14 @@ fun PackagesScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .background(Color.White, RoundedCornerShape(12.dp))
-                    .padding(4.dp),
+                    .padding(horizontal = 4.dp, vertical = 4.dp)
+                    .background(Color.White, RoundedCornerShape(10.dp))
+                    .padding(2.dp),
                 horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 TabButtonPackage(
-                    text = "All Packages",
+                    text = "Packages",
                     isSelected = selectedTab == "All Packages",
                     onClick = { selectedTab = "All Packages" },
                     modifier = Modifier.weight(1f)
@@ -227,16 +227,7 @@ fun PackagesScreen(
     }
 }
 
-@Composable
-fun BottomNavigationBar(
-    onNavigateToHome: () -> Unit,
-    onNavigateToPackages: () -> Unit,
-    onNavigateToHistory: () -> Unit,
-    onNavigateToProfile: () -> Unit,
-    selectedRoute: String
-) {
-    TODO("Not yet implemented")
-}
+
 
 @Composable
 fun TabButtonPackage(
@@ -269,6 +260,9 @@ fun PackageCard(pkg: WifiPackage, onChoosePackageClicked: () -> Unit) {
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
         shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFB8ECA9) // Use any Color you like
+        )
 //        backgroundColor = Color.White
     ) {
         Column(modifier = Modifier.padding(20.dp)) {

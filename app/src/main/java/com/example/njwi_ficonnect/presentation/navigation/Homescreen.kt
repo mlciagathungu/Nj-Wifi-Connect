@@ -1,13 +1,22 @@
 package com.example.njwi_ficonnect.presentation.navigation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.njwi_ficonnect.R
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -17,44 +26,55 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
-// Re-using colors
-val PrimaryBlue = Color(0xFF4A90E2)
-val PrimaryPurple = Color(0xFF9B59B6)
-val OrangeAccent = Color(0xFFFFA726)
-val GreenAccent = Color(0xFF66BB6A)
+// Color constants (move to a common theme file if needed)
+val PrimaryBlue = Color(0xFF0694EC)
+val PrimaryPurple = Color(0xFF9419A4)
+val OrangeAccent = Color(0xFFFF9800)
+val GreenAccent = Color(0xFF4CAF50)
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    userName: String = "Micia Gathungu!",
-    onBrowsePackagesClicked: () -> Unit,
-    onMySubscriptionsClicked: () -> Unit,
-    onAccountSettingsClicked: () -> Unit,
-    onNavigateToPackages: () -> Unit,
-    onNavigateToHistory: () -> Unit,
-    onNavigateToProfile: () -> Unit
+    userName: String = "User",
+    onBrowsePackagesClicked: () -> Unit = {},
+    onMySubscriptionsClicked: () -> Unit = {},
+    onAccountSettingsClicked: () -> Unit = {},
+    onNavigateToHome: () -> Unit = {},
+    onNavigateToPackages: () -> Unit = {},
+    onNavigateToHistory: () -> Unit = {},
+    onNavigateToProfile: () -> Unit = {},
+    selectedRoute: String = "home"
 ) {
+    // State for live time and date
+    var currentTime by remember { mutableStateOf(LocalDateTime.now()) }
+
+    // Update time every second
+    LaunchedEffect(Unit) {
+        while (true) {
+            currentTime = LocalDateTime.now()
+            delay(1000)
+        }
+    }
+    val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+    val dateFormatter = DateTimeFormatter.ofPattern("d/M/yyyy")
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Column(modifier = Modifier.weight(1f)) {
+                        Column {
                             Text(
                                 text = "Welcome back, $userName",
                                 fontSize = 20.sp,
@@ -68,150 +88,188 @@ fun HomeScreen(
                             )
                         }
                         Column(horizontalAlignment = Alignment.End) {
-                            Text(text = "17:58", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = PrimaryPurple)
-                            Text(text = "6/8/2025", fontSize = 14.sp, color = Color.Gray)
+                            Text(
+                                text = currentTime.format(timeFormatter),
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = PrimaryPurple
+                            )
+                            Text(
+                                text = currentTime.format(dateFormatter),
+                                fontSize = 14.sp,
+                                color = Color.Gray
+                            )
                         }
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.White
+                )
             )
         },
         bottomBar = {
-            PreviewBottomNavigationBar()
+            BottomNavigationBar(
+                onNavigateToHome = onNavigateToHome,
+                onNavigateToPackages = onNavigateToPackages,
+                onNavigateToHistory = onNavigateToHistory,
+                onNavigateToProfile = onNavigateToProfile,
+                selectedRoute = selectedRoute
+            )
         }
     ) { paddingValues ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(Color(0xFFF0F2F5))
+                .background(Color(0xFFF1F3F1))
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                elevation = CardDefaults.cardElevation(8.dp),
-                shape = RoundedCornerShape(16.dp),
-            ) {
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+            item {
+                // Welcome Card
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    elevation = CardDefaults.cardElevation(8.dp),
+                    shape = RoundedCornerShape(16.dp),
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Build,
-                        contentDescription = "Wi-Fi Icon",
-                        tint = PrimaryBlue,
-                        modifier = Modifier.size(64.dp)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "No Active Connection",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color.Black
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Choose a package to get started",
-                        fontSize = 14.sp,
-                        color = Color.Gray
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(
-                        onClick = onBrowsePackagesClicked,
-                        modifier = Modifier
-                            .fillMaxWidth(0.6f)
-                            .height(48.dp),
-                        colors = ButtonDefaults.buttonColors(),
-                        shape = RoundedCornerShape(8.dp)
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text("Browse Packages", color = Color.White, fontSize = 16.sp)
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_wifi_logo),
+                            contentDescription = "Wi-Fi Icon",
+                            tint = PrimaryBlue,
+                            modifier = Modifier.size(64.dp)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "No Active Connection",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Choose a package to get started",
+                            fontSize = 14.sp,
+                            color = Color.Gray
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = onBrowsePackagesClicked,
+                            modifier = Modifier
+                                .fillMaxWidth(0.6f)
+                                .height(48.dp),
+                            colors = ButtonDefaults.buttonColors(),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text("Browse Packages", color = Color.White, fontSize = 16.sp)
+                        }
                     }
                 }
             }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceAround
-            ) {
-                StatCard(
-                    value = "2,847",
-                    label = "Active Users",
-                    icon = Icons.Default.Build,
-                    modifier = Modifier.weight(1f)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                StatCard(
-                    value = "156",
-                    label = "Hotspots",
-                    icon = Icons.Default.Build,
-                    modifier = Modifier.weight(1f)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                StatCard(
-                    value = "99.9%",
-                    label = "Uptime",
-                    icon = Icons.Default.Build,
-                    valueColor = OrangeAccent,
-                    modifier = Modifier.weight(1f)
+            item {
+                // Statistics row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    StatCard(
+                        value = "2,847",
+                        label = "Active Users",
+                        icon = painterResource(id = R.drawable.ic_users),
+                        modifier = Modifier.weight(1f)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    StatCard(
+                        value = "156",
+                        label = "Hotspots",
+                        icon = painterResource(id = R.drawable.ic_hotspot),
+                        modifier = Modifier.weight(1f)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    StatCard(
+                        value = "99.9%",
+                        label = "Uptime",
+                        icon = painterResource(id = R.drawable.ic_uptime),
+                        modifier = Modifier.weight(1f),
+                        valueColor = OrangeAccent
+                    )
+                }
+            }
+            item { Spacer(modifier = Modifier.height(24.dp)) }
+            item {
+                Text(
+                    text = "Quick Actions",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black,
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
-            Text(
-                text = "Quick Actions",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            QuickActionItem(
-                icon = Icons.Default.Build,
-                title = "Browse Packages",
-                description = "Find the perfect plan",
-                onClick = onBrowsePackagesClicked
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            QuickActionItem(
-                icon = Icons.Default.Build,
-                title = "My Subscriptions",
-                description = "View history & active plans",
-                onClick = onMySubscriptionsClicked
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            QuickActionItem(
-                icon = Icons.Default.Settings,
-                title = "Account Settings",
-                description = "Manage your profile",
-                onClick = onAccountSettingsClicked
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-            Text(
-                text = "Why Choose NJ Connect?",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            WhyChooseItem(
-                icon = Icons.Default.Build,
-                title = "Lightning Fast",
-                description = "High-speed internet for all your needs"
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            WhyChooseItem(
-                icon = Icons.Default.Build,
-                title = "Secure Connection",
-                description = "Enterprise-grade security protocols",
-                iconTint = GreenAccent
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            WhyChooseItem(
-                icon = Icons.Default.Build,
-                title = "24/7 Support",
-                description = "Round-the-clock customer assistance"
-            )
-            Spacer(modifier = Modifier.height(16.dp))
+            item {
+                QuickActionItem(
+                    icon = painterResource(id = R.drawable.ic_browse_packages),
+                    title = "Browse Packages",
+                    description = "Find the perfect plan",
+                    onClick = onBrowsePackagesClicked
+                )
+            }
+            item { Spacer(modifier = Modifier.height(8.dp)) }
+            item {
+                QuickActionItem(
+                    icon = painterResource(id = R.drawable.ic_subscriptions),
+                    title = "My Subscriptions",
+                    description = "View history & active plans",
+                    onClick = onMySubscriptionsClicked
+                )
+            }
+            item { Spacer(modifier = Modifier.height(8.dp)) }
+            item {
+                QuickActionItem(
+                    icon = painterResource(id = R.drawable.ic_profile),
+                    title = "Account Settings",
+                    description = "Manage your profile",
+                    onClick = onAccountSettingsClicked
+                )
+            }
+            item { Spacer(modifier = Modifier.height(24.dp)) }
+            item {
+                Text(
+                    text = "Why Choose NJ Connect?",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+            item {
+                WhyChooseItem(
+                    icon = painterResource(id = R.drawable.ic_lightning_fast),
+                    title = "Lightning Fast",
+                    description = "High-speed internet for all your needs"
+                )
+            }
+            item { Spacer(modifier = Modifier.height(8.dp)) }
+            item {
+                WhyChooseItem(
+                    icon = painterResource(id = R.drawable.ic_secure_connection),
+                    title = "Secure Connection",
+                    description = "Enterprise-grade security protocols",
+                    iconTint = GreenAccent
+                )
+            }
+            item { Spacer(modifier = Modifier.height(8.dp)) }
+            item {
+                WhyChooseItem(
+                    icon = painterResource(id = R.drawable.ic_support),
+                    title = "24/7 Support",
+                    description = "Round-the-clock customer assistance"
+                )
+            }
+            item { Spacer(modifier = Modifier.height(16.dp)) }
         }
     }
 }
@@ -220,14 +278,17 @@ fun HomeScreen(
 fun StatCard(
     value: String,
     label: String,
-    icon: ImageVector,
+    icon: Painter,
     modifier: Modifier = Modifier,
-    valueColor: Color = Color.Black
+    valueColor: Color = PrimaryPurple
 ) {
     Card(
-        modifier = modifier.height(90.dp),
+        modifier = modifier.height(100.dp),
         elevation = CardDefaults.cardElevation(4.dp),
         shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFCAEAA9)
+        )
     ) {
         Column(
             modifier = Modifier
@@ -237,113 +298,99 @@ fun StatCard(
             verticalArrangement = Arrangement.Center
         ) {
             Icon(
-                imageVector = icon,
+                painter = icon,
                 contentDescription = label,
                 tint = PrimaryBlue,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(28.dp)
             )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(value, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = valueColor)
-            Text(label, fontSize = 12.sp, color = Color.Gray)
+            Spacer(Modifier.height(6.dp))
+            Text(
+                text = value,
+                color = valueColor,
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp
+            )
+            Text(
+                text = label,
+                color = Color.Gray,
+                fontSize = 12.sp
+            )
         }
     }
 }
 
 @Composable
 fun QuickActionItem(
-    icon: ImageVector,
+    icon: Painter,
     title: String,
     description: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    onClick: () -> Unit
 ) {
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(68.dp)
-            .clickable { onClick() },
-        elevation = CardDefaults.cardElevation(4.dp),
-        shape = RoundedCornerShape(10.dp),
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(2.dp),
+        shape = RoundedCornerShape(10.dp)
     ) {
         Row(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp),
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(imageVector = icon, contentDescription = title, tint = PrimaryBlue, modifier = Modifier.size(28.dp))
+            Icon(
+                painter = icon,
+                contentDescription = title,
+                tint = PrimaryBlue,
+                modifier = Modifier.size(28.dp)
+            )
             Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(title, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
-                Text(description, fontSize = 12.sp, color = Color.Gray)
+            Column {
+                Text(title, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                Text(description, fontSize = 13.sp, color = Color.Gray)
             }
-            Icon(imageVector = Icons.Default.ArrowForward, contentDescription = "Navigate", tint = Color.LightGray)
         }
     }
 }
 
 @Composable
 fun WhyChooseItem(
-    icon: ImageVector,
+    icon: Painter,
     title: String,
     description: String,
-    modifier: Modifier = Modifier,
     iconTint: Color = PrimaryBlue
 ) {
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(72.dp),
-        elevation = CardDefaults.cardElevation(4.dp),
-        shape = RoundedCornerShape(12.dp),
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = title,
-                tint = iconTint,
-                modifier = Modifier.size(28.dp)
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Column {
-                Text(title, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
-                Text(description, fontSize = 12.sp, color = Color.Gray)
-            }
-        }
-    }
-}
-
-// Minimal preview stubs
-@Composable
-fun PreviewBottomNavigationBar() {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(56.dp)
-            .background(Color.White),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(vertical = 4.dp)
     ) {
-        repeat(4) {
-            Icon(imageVector = Icons.Default.Build, contentDescription = "Nav", tint = PrimaryPurple)
+        Icon(
+            painter = icon,
+            contentDescription = title,
+            tint = iconTint,
+            modifier = Modifier.size(28.dp)
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Column {
+            Text(title, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Text(description, fontSize = 13.sp, color = Color.Gray)
         }
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview(showBackground = true)
 @Composable
 fun PreviewHomeScreen() {
     HomeScreen(
-        onBrowsePackagesClicked = { /* preview */ },
-        onMySubscriptionsClicked = { /* preview */ },
-        onAccountSettingsClicked = { /* preview */ },
-        onNavigateToPackages = { /* preview */ },
-        onNavigateToHistory = { /* preview */ },
-        onNavigateToProfile = { /* preview */ }
+        userName = "Mlcia",
+        onBrowsePackagesClicked = {},
+        onMySubscriptionsClicked = {},
+        onAccountSettingsClicked = {},
+        onNavigateToHome = {},
+        onNavigateToPackages = {},
+        onNavigateToHistory = {},
+        onNavigateToProfile = {},
+        selectedRoute = "home"
     )
 }

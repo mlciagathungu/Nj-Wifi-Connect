@@ -40,8 +40,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.njwi_ficonnect.R
 
 // Define custom colors (ideally these belong in your app's Theme.kt or Color.kt file)
-val PrimaryBlue = Color(0xFF4A90E2)
-val PrimaryPurple = Color(0xFF9B59B6)
+val PrimaryBlue = Color(0xFF32EF07)
+val PrimaryPurple = Color(0xFFCACE0C)
 
 @Composable
 fun WifiLoginScreen(
@@ -74,6 +74,7 @@ fun WifiLoginScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(Color(0xFFF1F3F1))
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
@@ -105,6 +106,9 @@ fun WifiLoginScreen(
                     .padding(horizontal = 8.dp),
                 elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp),
                 shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFFCAEAA9)
+                )
             ) {
                 Column(
                     modifier = Modifier.padding(24.dp),
@@ -238,8 +242,18 @@ fun WifiLoginScreen(
                             onValueChange = { confirmPassword = it },
                             label = { Text("Confirm Password") },
                             leadingIcon = { androidx.compose.material3.Icon(Icons.Default.Lock, contentDescription = "Lock Icon") },
-                            visualTransformation = PasswordVisualTransformation(),
+                            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                            trailingIcon = {
+                                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                    Icon(
+                                        painter = painterResource(
+                                            id = if (passwordVisible) R.drawable.ic_visibility_on else R.drawable.ic_visibility_off
+                                        ),
+                                        contentDescription = "Toggle password visibility"
+                                    )
+                                }
+                            },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
                             colors = OutlinedTextFieldDefaults.colors(
@@ -248,6 +262,13 @@ fun WifiLoginScreen(
                             )
                         )
                         Spacer(modifier = Modifier.height(24.dp)) // Adjust spacing after confirm password
+                        // Terms and Privacy Policy
+                        Text(
+                            text = "By continuing, you agree to our Terms of Service and Privacy Policy",
+                            fontSize = 12.sp,
+                            color = Color.Gray,
+                            modifier = Modifier.padding(horizontal = 24.dp)
+                        )
                     } else {
                         // If Login tab, ensure consistent spacing before button
                         Spacer(modifier = Modifier.height(24.dp))
@@ -288,6 +309,7 @@ fun WifiLoginScreen(
                             )
                         }
                     }
+
                     Spacer(modifier = Modifier.height(16.dp))
 
                     // Forgot Password (only visible on Login tab)

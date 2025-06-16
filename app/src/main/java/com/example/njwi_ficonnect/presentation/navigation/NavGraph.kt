@@ -11,7 +11,7 @@ import com.example.njwi_ficonnect.presentation.components.WifiLoginScreen
 // INSIDE THIS FILE WE WILL DEFINE NAVCONTROLLER : THIS IS USED TO NAVIGATE
 // TO DIFFERENT COMPOSABLES / SCREENS
 @Composable
-fun TodoNavGraph(navController: NavHostController){
+fun WifiNavGraph(navController: NavHostController){
     NavHost(navController = navController, startDestination = "signUp") {
         composable("signUp"){
             WifiLoginScreen(

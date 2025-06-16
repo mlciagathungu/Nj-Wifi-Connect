@@ -11,7 +11,13 @@
       <SelectionState runConfigName="PreviewWifiLoginScreen">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="PreviewPackagesScreen">
+      <SelectionState runConfigName="PreviewProfileScreen">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="PreviewHistoryScreenWithData">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="PreviewConfirmPurchaseScreenBusinessPackage">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>
