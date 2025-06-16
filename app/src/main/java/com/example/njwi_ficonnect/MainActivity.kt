@@ -9,8 +9,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
+import com.example.njwi_ficonnect.presentation.navigation.WifiNavGraph
 import com.example.njwi_ficonnect.ui.theme.NjWIFIConnectTheme
-import com.example.todo.presentation.navigation.WifiNavGraph
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

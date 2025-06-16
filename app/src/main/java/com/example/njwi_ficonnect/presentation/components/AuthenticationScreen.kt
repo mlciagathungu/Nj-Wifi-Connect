@@ -10,17 +10,7 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,30 +25,32 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.njwi_ficonnect.R
 
-// Define custom colors (ideally these belong in your app's Theme.kt or Color.kt file)
+import androidx.lifecycle.viewmodel.compose.viewModel
+
 val PrimaryBlue = Color(0xFF32EF07)
 val PrimaryPurple = Color(0xFFCACE0C)
 
 @Composable
 fun WifiLoginScreen(
-    navController: NavController,
-    onSignInClicked: (String, String) -> Unit, // phone, password
-    onSignUpClicked: (String, String, String, String) -> Unit, // fullName, phoneNumber, email, password
+    navController: NavHostController,
+    viewModel: AuthViewModel = viewModel(),
     onForgotPasswordClicked: () -> Unit
 ) {
-    var selectedTab by remember { mutableStateOf(0) } // 0 for Login, 1 for Sign Up
-    var fullName by remember { mutableStateOf("") } // New state for Full Name
+    var selectedTab by remember { mutableStateOf(0) }
+    var fullName by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
-    var emailAddress by remember { mutableStateOf("") } // New state for Email Address
+    var emailAddress by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") } // New state for Confirm Password
+    var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var localError by remember { mutableStateOf<String?>(null) }
 
-    // Background gradient for the entire screen, matching the provided design
+    val authState by viewModel.authState.collectAsState()
+
     Surface(
         modifier = Modifier
             .fillMaxSize()
@@ -79,7 +71,6 @@ fun WifiLoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // App Logo and Name
             Image(
                 painter = painterResource(id = R.drawable.ic_wifi_logo),
                 contentDescription = "App Logo",
@@ -99,7 +90,6 @@ fun WifiLoginScreen(
             )
             Spacer(modifier = Modifier.height(40.dp))
 
-            // Login/Sign Up Toggle Card
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -114,7 +104,6 @@ fun WifiLoginScreen(
                     modifier = Modifier.padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Toggle Buttons for Login/Sign Up
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -128,12 +117,13 @@ fun WifiLoginScreen(
                             isSelected = selectedTab == 0,
                             onClick = {
                                 selectedTab = 0
-                                // Clear fields when switching tabs if desired
                                 phoneNumber = ""
                                 password = ""
                                 fullName = ""
                                 emailAddress = ""
                                 confirmPassword = ""
+                                localError = null
+                                viewModel.reset()
                             },
                             modifier = Modifier.weight(1f)
                         )
@@ -142,27 +132,40 @@ fun WifiLoginScreen(
                             isSelected = selectedTab == 1,
                             onClick = {
                                 selectedTab = 1
-                                // Clear fields when switching tabs if desired
                                 phoneNumber = ""
                                 password = ""
                                 fullName = ""
                                 emailAddress = ""
                                 confirmPassword = ""
+                                localError = null
+                                viewModel.reset()
                             },
                             modifier = Modifier.weight(1f)
                         )
                     }
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // --- Conditional Input Fields based on selectedTab ---
+                    localError?.let {
+                        Text(
+                            text = it,
+                            color = Color.Red,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                    }
+                    if (authState is AuthState.Error) {
+                        Text(
+                            text = (authState as AuthState.Error).message,
+                            color = Color.Red,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                    }
 
-                    // Full Name Input (Only for Sign Up)
                     if (selectedTab == 1) {
                         OutlinedTextField(
                             value = fullName,
                             onValueChange = { fullName = it },
                             label = { Text("Full Name") },
-                            leadingIcon = { androidx.compose.material3.Icon(Icons.Default.Person, contentDescription = "Person Icon") },
+                            leadingIcon = { Icon(Icons.Default.Person, contentDescription = "Person Icon") },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
@@ -174,12 +177,11 @@ fun WifiLoginScreen(
                         Spacer(modifier = Modifier.height(16.dp))
                     }
 
-                    // Phone Number Input
                     OutlinedTextField(
                         value = phoneNumber,
                         onValueChange = { phoneNumber = it },
                         label = { Text("Phone Number (0712345678)") },
-                        leadingIcon = { androidx.compose.material3.Icon(Icons.Default.Phone, contentDescription = "Phone Icon") },
+                        leadingIcon = { Icon(Icons.Default.Phone, contentDescription = "Phone Icon") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
@@ -190,13 +192,12 @@ fun WifiLoginScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Email Address Input (Only for Sign Up)
                     if (selectedTab == 1) {
                         OutlinedTextField(
                             value = emailAddress,
                             onValueChange = { emailAddress = it },
                             label = { Text("Email Address") },
-                            leadingIcon = { androidx.compose.material3.Icon(Icons.Default.Email, contentDescription = "Email Icon") },
+                            leadingIcon = { Icon(Icons.Default.Email, contentDescription = "Email Icon") },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
@@ -208,12 +209,11 @@ fun WifiLoginScreen(
                         Spacer(modifier = Modifier.height(16.dp))
                     }
 
-                    // Password Input
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
                         label = { Text("Password") },
-                        leadingIcon = { androidx.compose.material3.Icon(Icons.Default.Lock, contentDescription = "Lock Icon") },
+                        leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Lock Icon") },
                         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         trailingIcon = {
@@ -223,7 +223,7 @@ fun WifiLoginScreen(
                                         id = if (passwordVisible) R.drawable.ic_visibility_on else R.drawable.ic_visibility_off
                                     ),
                                     contentDescription = "Toggle password visibility"
-                        )
+                                )
                             }
                         },
                         modifier = Modifier.fillMaxWidth(),
@@ -235,13 +235,12 @@ fun WifiLoginScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Confirm Password Input (Only for Sign Up)
                     if (selectedTab == 1) {
                         OutlinedTextField(
                             value = confirmPassword,
                             onValueChange = { confirmPassword = it },
                             label = { Text("Confirm Password") },
-                            leadingIcon = { androidx.compose.material3.Icon(Icons.Default.Lock, contentDescription = "Lock Icon") },
+                            leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Lock Icon") },
                             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                             trailingIcon = {
@@ -261,8 +260,7 @@ fun WifiLoginScreen(
                                 unfocusedBorderColor = Color.LightGray
                             )
                         )
-                        Spacer(modifier = Modifier.height(24.dp)) // Adjust spacing after confirm password
-                        // Terms and Privacy Policy
+                        Spacer(modifier = Modifier.height(24.dp))
                         Text(
                             text = "By continuing, you agree to our Terms of Service and Privacy Policy",
                             fontSize = 12.sp,
@@ -270,17 +268,20 @@ fun WifiLoginScreen(
                             modifier = Modifier.padding(horizontal = 24.dp)
                         )
                     } else {
-                        // If Login tab, ensure consistent spacing before button
                         Spacer(modifier = Modifier.height(24.dp))
                     }
 
-                    // Main Action Button (Sign In / Create Account)
                     Button(
                         onClick = {
+                            localError = null
                             if (selectedTab == 0) {
-                                onSignInClicked(phoneNumber, password)
+                                viewModel.signIn(phoneNumber, password)
                             } else {
-                                onSignUpClicked(fullName, phoneNumber, emailAddress, password)
+                                if (password != confirmPassword) {
+                                    localError = "Passwords do not match"
+                                } else {
+                                    viewModel.signUp(fullName, phoneNumber, emailAddress, password)
+                                }
                             }
                         },
                         modifier = Modifier
@@ -288,7 +289,8 @@ fun WifiLoginScreen(
                             .height(50.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                         contentPadding = PaddingValues(),
-                        shape = RoundedCornerShape(8.dp)
+                        shape = RoundedCornerShape(8.dp),
+                        enabled = authState !is AuthState.Loading
                     ) {
                         Box(
                             modifier = Modifier
@@ -301,21 +303,35 @@ fun WifiLoginScreen(
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = if (selectedTab == 0) "Sign In" else "Create Account",
-                                color = Color.White,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
+                            if (authState is AuthState.Loading) {
+                                CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
+                            } else {
+                                Text(
+                                    text = if (selectedTab == 0) "Sign In" else "Create Account",
+                                    color = Color.White,
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
                         }
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Forgot Password (only visible on Login tab)
                     if (selectedTab == 0) {
                         TextButton(onClick = onForgotPasswordClicked) {
                             Text("Forgot Password?", color = PrimaryBlue, fontSize = 14.sp)
+                        }
+                    }
+
+                    // Navigate on success
+                    if (authState is AuthState.Success) {
+                        LaunchedEffect(authState, selectedTab) {
+                            viewModel.reset()
+                            // Replace "home" with your actual destination route
+                            navController.navigate("home") {
+                                popUpTo("login") { inclusive = true }
+                            }
                         }
                     }
                 }
@@ -323,7 +339,6 @@ fun WifiLoginScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Terms and Privacy Policy
             Text(
                 text = "By continuing, you agree to our Terms of Service and Privacy Policy",
                 fontSize = 12.sp,
@@ -359,8 +374,6 @@ fun TabButton(
 fun PreviewWifiLoginScreen() {
     WifiLoginScreen(
         navController = rememberNavController(),
-        onSignInClicked = { phone, pass -> println("Preview: Sign In Clicked for $phone") },
-        onSignUpClicked = { full, phone, email, pass -> println("Preview: Sign Up Clicked for $phone") },
         onForgotPasswordClicked = { println("Preview: Forgot Password Clicked") }
     )
 }

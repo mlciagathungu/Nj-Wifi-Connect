@@ -40,6 +40,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController // <-- Add this import
 
 // Consistent primary colors
@@ -48,7 +49,7 @@ val f_color = Color(0xFF23EC08)
 
 @Composable
 fun ForgotPasswordScreen(
-    navController: NavController,
+    navController: NavHostController,
     onResetPasswordClicked: (String) -> Unit,
     onBackToLoginClicked: () -> Unit
 ) {
