@@ -5,8 +5,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.njwi_ficonnect.presentation.components.ForgotPasswordScreen
-import com.example.njwi_ficonnect.presentation.components.AuthenticationScreen
-import com.example.njwi_ficonnect.presentation.navigation.HomeScreen
+import com.example.njwi_ficonnect.presentation.components.WifiLoginScreen
+import com.example.njwi_ficonnect.presentation.screens.HomeScreen
 import com.example.njwi_ficonnect.presentation.screens.PackagesScreen
 import com.example.njwi_ficonnect.presentation.screens.ConfirmPurchaseScreen
 import com.example.njwi_ficonnect.presentation.screens.HistoryScreen
@@ -26,10 +26,8 @@ object Routes {
 fun WifiNavGraph(navController: NavHostController) {
     NavHost(navController = navController, startDestination = Routes.AUTH) {
         composable(Routes.AUTH) {
-            AuthenticationScreen(
+            WifiLoginScreen(
                 navController = navController,
-                onSignInClicked = { navController.navigate(Routes.HOME) },
-                onSignUpClicked = { navController.navigate(Routes.HOME) },
                 onForgotPasswordClicked = { navController.navigate(Routes.FORGOT_PASSWORD) }
             )
         }
@@ -41,42 +39,41 @@ fun WifiNavGraph(navController: NavHostController) {
             )
         }
         composable(Routes.HOME) {
-            Homescreen(
-                navController = navController,
-                onPackagesClicked = { navController.navigate(Routes.PACKAGES) },
-                onHistoryClicked = { navController.navigate(Routes.HISTORY) },
-                onProfileClicked = { navController.navigate(Routes.PROFILE) }
-            )
+//            HomeScreen(
+//                navController = navController,
+//                onPackagesClicked = { navController.navigate(Routes.PACKAGES) },
+//                onHistoryClicked = { navController.navigate(Routes.HISTORY) },
+//                onProfileClicked = { navController.navigate(Routes.PROFILE) }
+//            )
         }
         composable(Routes.PACKAGES) {
-            PackagesScreen(
-                navController = navController,
-                onPurchaseClicked = { navController.navigate(Routes.CONFIRM_PURCHASE) }
-            )
+//            PackagesScreen(
+//                navController = navController,
+//                onPurchaseClicked = { navController.navigate(Routes.CONFIRM_PURCHASE) }
+//            )
         }
         composable(Routes.CONFIRM_PURCHASE) {
-            ConfirmPurchaseScreen(
-                navController = navController,
-                onPurchaseConfirmed = { navController.popBackStack(Routes.PACKAGES, inclusive = false) },
-                onCancel = { navController.popBackStack(Routes.PACKAGES, inclusive = false) }
-            )
+//            ConfirmPurchaseScreen(
+////                navController = navController,
+//                onPurchaseConfirmed = { navController.popBackStack(Routes.PACKAGES, inclusive = false) },
+//                onCancel = { navController.popBackStack(Routes.PACKAGES, inclusive = false) }
+//            )
         }
         composable(Routes.HISTORY) {
-            HistoryScreen(
-                navController = navController,
-                onBackClicked = { navController.popBackStack(Routes.HOME, inclusive = false) }
-            )
+//            HistoryScreen(
+//                navController = navController,
+//                onBackClicked = { navController.popBackStack(Routes.HOME, inclusive = false) }
+//            )
         }
         composable(Routes.PROFILE) {
-            ProfileScreen(
-                navController = navController,
-                onLogoutClicked = {
-                    navController.navigate(Routes.AUTH) {
-                        popUpTo(Routes.HOME) { inclusive = true }
-                    }
-                }
-            )
+//            ProfileScreen(
+//                navController = navController,
+//                onLogoutClicked = {
+//                    navController.navigate(Routes.AUTH) {
+//                        popUpTo(Routes.HOME) { inclusive = true }
+//                    }
+//                }
+//            )
         }
     }
 }
-

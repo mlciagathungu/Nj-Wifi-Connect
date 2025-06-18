@@ -28,7 +28,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.njwi_ficonnect.R
-
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 val PrimaryBlue = Color(0xFF32EF07)
@@ -67,179 +66,179 @@ fun WifiLoginScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color(0xFFF1F3F1))
-                .padding(16.dp),
+                .padding(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Top
         ) {
+            // Logo and Text
             Image(
                 painter = painterResource(id = R.drawable.ic_wifi_logo),
                 contentDescription = "App Logo",
-                modifier = Modifier.size(80.dp)
+                modifier = Modifier.size(60.dp)
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = "NJ Connect",
-                fontSize = 32.sp,
+                fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
             )
             Text(
                 text = "Affordable Wi-Fi for Everyone",
-                fontSize = 16.sp,
+                fontSize = 12.sp,
                 color = Color.Gray
             )
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            Card(
+            // Center card vertically
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp),
-                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFFCAEAA9)
-                )
+                    .weight(1f, fill = true),
+                contentAlignment = Alignment.Center
             ) {
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth(0.97f)
+                        .heightIn(min = 440.dp, max = 550.dp),
+                    elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFFCAEAA9)
+                    )
                 ) {
-                    Row(
+                    Column(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFFE0E0E0))
-                            .padding(4.dp),
-                        horizontalArrangement = Arrangement.SpaceAround
+                            .padding(horizontal = 18.dp, vertical = 14.dp)
+                            .fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Top
                     ) {
-                        TabButton(
-                            text = "Login",
-                            isSelected = selectedTab == 0,
-                            onClick = {
-                                selectedTab = 0
-                                phoneNumber = ""
-                                password = ""
-                                fullName = ""
-                                emailAddress = ""
-                                confirmPassword = ""
-                                localError = null
-                                viewModel.reset()
-                            },
-                            modifier = Modifier.weight(1f)
-                        )
-                        TabButton(
-                            text = "Sign Up",
-                            isSelected = selectedTab == 1,
-                            onClick = {
-                                selectedTab = 1
-                                phoneNumber = ""
-                                password = ""
-                                fullName = ""
-                                emailAddress = ""
-                                confirmPassword = ""
-                                localError = null
-                                viewModel.reset()
-                            },
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    localError?.let {
-                        Text(
-                            text = it,
-                            color = Color.Red,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
-                    }
-                    if (authState is AuthState.Error) {
-                        Text(
-                            text = (authState as AuthState.Error).message,
-                            color = Color.Red,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
-                    }
-
-                    if (selectedTab == 1) {
-                        OutlinedTextField(
-                            value = fullName,
-                            onValueChange = { fullName = it },
-                            label = { Text("Full Name") },
-                            leadingIcon = { Icon(Icons.Default.Person, contentDescription = "Person Icon") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = PrimaryBlue,
-                                unfocusedBorderColor = Color.LightGray
+                        // Tab Row with improved spacing and padding
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp, horizontal = 0.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color(0xFFE0E0E0)),
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            TabButton(
+                                text = "Sign In",
+                                isSelected = selectedTab == 0,
+                                onClick = {
+                                    selectedTab = 0
+                                    phoneNumber = ""
+                                    password = ""
+                                    fullName = ""
+                                    emailAddress = ""
+                                    confirmPassword = ""
+                                    localError = null
+                                    viewModel.reset()
+                                },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(start = 2.dp, end = 1.dp, top = 2.dp, bottom = 2.dp)
                             )
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                    }
-
-                    OutlinedTextField(
-                        value = phoneNumber,
-                        onValueChange = { phoneNumber = it },
-                        label = { Text("Phone Number (0712345678)") },
-                        leadingIcon = { Icon(Icons.Default.Phone, contentDescription = "Phone Icon") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = PrimaryBlue,
-                            unfocusedBorderColor = Color.LightGray
-                        )
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    if (selectedTab == 1) {
-                        OutlinedTextField(
-                            value = emailAddress,
-                            onValueChange = { emailAddress = it },
-                            label = { Text("Email Address") },
-                            leadingIcon = { Icon(Icons.Default.Email, contentDescription = "Email Icon") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = PrimaryBlue,
-                                unfocusedBorderColor = Color.LightGray
+                            TabButton(
+                                text = "Create Account",
+                                isSelected = selectedTab == 1,
+                                onClick = {
+                                    selectedTab = 1
+                                    phoneNumber = ""
+                                    password = ""
+                                    fullName = ""
+                                    emailAddress = ""
+                                    confirmPassword = ""
+                                    localError = null
+                                    viewModel.reset()
+                                },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(start = 1.dp, end = 2.dp, top = 2.dp, bottom = 2.dp)
                             )
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                    }
+                        }
 
-                    OutlinedTextField(
-                        value = password,
-                        onValueChange = { password = it },
-                        label = { Text("Password") },
-                        leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Lock Icon") },
-                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                        trailingIcon = {
-                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                                Icon(
-                                    painter = painterResource(
-                                        id = if (passwordVisible) R.drawable.ic_visibility_on else R.drawable.ic_visibility_off
-                                    ),
-                                    contentDescription = "Toggle password visibility"
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Error texts
+                        localError?.let {
+                            Text(
+                                text = it,
+                                color = Color.Red,
+                                fontSize = 12.sp,
+                                modifier = Modifier.padding(bottom = 2.dp)
+                            )
+                        }
+                        if (authState is AuthState.Error) {
+                            Text(
+                                text = (authState as AuthState.Error).message,
+                                color = Color.Red,
+                                fontSize = 12.sp,
+                                modifier = Modifier.padding(bottom = 2.dp)
+                            )
+                        }
+
+                        if (selectedTab == 1) {
+                            OutlinedTextField(
+                                value = fullName,
+                                onValueChange = { fullName = it },
+                                label = { Text("Full Name") },
+                                leadingIcon = { Icon(Icons.Default.Person, contentDescription = "Person Icon") },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 4.dp),
+                                singleLine = true,
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = PrimaryBlue,
+                                    unfocusedBorderColor = Color.LightGray
                                 )
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = PrimaryBlue,
-                            unfocusedBorderColor = Color.LightGray
-                        )
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                        }
 
-                    if (selectedTab == 1) {
                         OutlinedTextField(
-                            value = confirmPassword,
-                            onValueChange = { confirmPassword = it },
-                            label = { Text("Confirm Password") },
+                            value = phoneNumber,
+                            onValueChange = { phoneNumber = it },
+                            label = { Text("Phone Number (0712345678)") },
+                            leadingIcon = { Icon(Icons.Default.Phone, contentDescription = "Phone Icon") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 2.dp),
+                            singleLine = true,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = PrimaryBlue,
+                                unfocusedBorderColor = Color.LightGray
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        if (selectedTab == 1) {
+                            OutlinedTextField(
+                                value = emailAddress,
+                                onValueChange = { emailAddress = it },
+                                label = { Text("Email Address") },
+                                leadingIcon = { Icon(Icons.Default.Email, contentDescription = "Email Icon") },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 2.dp),
+                                singleLine = true,
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = PrimaryBlue,
+                                    unfocusedBorderColor = Color.LightGray
+                                )
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                        }
+
+                        OutlinedTextField(
+                            value = password,
+                            onValueChange = { password = it },
+                            label = { Text("Password") },
                             leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Lock Icon") },
                             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -253,98 +252,135 @@ fun WifiLoginScreen(
                                     )
                                 }
                             },
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 2.dp),
                             singleLine = true,
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = PrimaryBlue,
                                 unfocusedBorderColor = Color.LightGray
                             )
                         )
-                        Spacer(modifier = Modifier.height(24.dp))
-                        Text(
-                            text = "By continuing, you agree to our Terms of Service and Privacy Policy",
-                            fontSize = 12.sp,
-                            color = Color.Gray,
-                            modifier = Modifier.padding(horizontal = 24.dp)
-                        )
-                    } else {
-                        Spacer(modifier = Modifier.height(24.dp))
-                    }
+                        Spacer(modifier = Modifier.height(6.dp))
 
-                    Button(
-                        onClick = {
-                            localError = null
-                            if (selectedTab == 0) {
-                                viewModel.signIn(phoneNumber, password)
-                            } else {
-                                if (password != confirmPassword) {
-                                    localError = "Passwords do not match"
+                        if (selectedTab == 1) {
+                            OutlinedTextField(
+                                value = confirmPassword,
+                                onValueChange = { confirmPassword = it },
+                                label = { Text("Confirm Password") },
+                                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Lock Icon") },
+                                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                                trailingIcon = {
+                                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                        Icon(
+                                            painter = painterResource(
+                                                id = if (passwordVisible) R.drawable.ic_visibility_on else R.drawable.ic_visibility_off
+                                            ),
+                                            contentDescription = "Toggle password visibility"
+                                        )
+                                    }
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 2.dp),
+                                singleLine = true,
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = PrimaryBlue,
+                                    unfocusedBorderColor = Color.LightGray
+                                )
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+
+                        // Button
+                        Button(
+                            onClick = {
+                                localError = null
+                                if (selectedTab == 0) {
+                                    viewModel.signIn(phoneNumber, password)
                                 } else {
-                                    viewModel.signUp(fullName, phoneNumber, emailAddress, password)
+                                    if (password != confirmPassword) {
+                                        localError = "Passwords do not match"
+                                    } else {
+                                        viewModel.signUp(fullName, phoneNumber, emailAddress, password)
+                                    }
+                                }
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(38.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                            contentPadding = PaddingValues(),
+                            shape = RoundedCornerShape(8.dp),
+                            enabled = authState !is AuthState.Loading
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(
+                                        brush = Brush.horizontalGradient(
+                                            colors = listOf(PrimaryBlue, PrimaryPurple)
+                                        ),
+                                        shape = RoundedCornerShape(8.dp)
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (authState is AuthState.Loading) {
+                                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(18.dp))
+                                } else {
+                                    Text(
+                                        text = if (selectedTab == 0) "Sign In" else "Create Account",
+                                        color = Color.White,
+                                        fontSize = 15.sp,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
                                 }
                             }
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(50.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                        contentPadding = PaddingValues(),
-                        shape = RoundedCornerShape(8.dp),
-                        enabled = authState !is AuthState.Loading
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(
-                                    brush = Brush.horizontalGradient(
-                                        colors = listOf(PrimaryBlue, PrimaryPurple)
-                                    ),
-                                    shape = RoundedCornerShape(8.dp)
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            if (authState is AuthState.Loading) {
-                                CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
-                            } else {
-                                Text(
-                                    text = if (selectedTab == 0) "Sign In" else "Create Account",
-                                    color = Color.White,
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.SemiBold
-                                )
+                        }
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        if (selectedTab == 0) {
+                            TextButton(onClick = onForgotPasswordClicked) {
+                                Text("Forgot Password?", color = PrimaryBlue, fontSize = 12.sp)
                             }
                         }
-                    }
 
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    if (selectedTab == 0) {
-                        TextButton(onClick = onForgotPasswordClicked) {
-                            Text("Forgot Password?", color = PrimaryBlue, fontSize = 14.sp)
+                        // Terms only for sign up (to keep card balanced)
+                        if (selectedTab == 1) {
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "By continuing, you agree to our Terms of Service and Privacy Policy",
+                                fontSize = 9.sp,
+                                color = Color.Gray,
+                                modifier = Modifier.padding(horizontal = 8.dp)
+                            )
                         }
-                    }
 
-                    // Navigate on success
-                    if (authState is AuthState.Success) {
-                        LaunchedEffect(authState, selectedTab) {
-                            viewModel.reset()
-                            // Replace "home" with your actual destination route
-                            navController.navigate("home") {
-                                popUpTo("login") { inclusive = true }
+                        // Navigate on success
+                        if (authState is AuthState.Success) {
+                            LaunchedEffect(authState, selectedTab) {
+                                viewModel.reset()
+                                navController.navigate("home") {
+                                    popUpTo("login") { inclusive = true }
+                                }
                             }
                         }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "By continuing, you agree to our Terms of Service and Privacy Policy",
-                fontSize = 12.sp,
-                color = Color.Gray,
-                modifier = Modifier.padding(horizontal = 24.dp)
-            )
+            Spacer(modifier = Modifier.height(10.dp))
+            // Only show terms at the bottom for login (for compactness)
+            if (selectedTab == 0) {
+                Text(
+                    text = "By continuing, you agree to our Terms of Service and Privacy Policy",
+                    fontSize = 9.sp,
+                    color = Color.Gray,
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                )
+            }
         }
     }
 }
@@ -358,14 +394,21 @@ fun TabButton(
 ) {
     Button(
         onClick = onClick,
-        modifier = modifier.height(40.dp),
+        modifier = modifier
+            .height(32.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = if (isSelected) Color.White else Color.Transparent,
             contentColor = if (isSelected) PrimaryBlue else Color.Gray
         ),
-        shape = RoundedCornerShape(8.dp)
+        shape = RoundedCornerShape(8.dp),
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
     ) {
-        Text(text, fontWeight = FontWeight.SemiBold)
+        Text(
+            text = text,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 14.sp,
+            maxLines = 1
+        )
     }
 }
 

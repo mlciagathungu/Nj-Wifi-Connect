@@ -1,11 +1,10 @@
-package com.example.njwi_ficonnect.presentation.navigation
+package com.example.njwi_ficonnect.presentation.screens
 
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,15 +27,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.ui.Alignment
-import androidx.navigation.NavController
-import androidx.navigation.NavHostController
+import com.example.njwi_ficonnect.presentation.navigation.BottomNavigationBar
 import kotlinx.coroutines.delay
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 // Color constants (move to a common theme file if needed)
-val PrimaryBlue = Color(0xFF0694EC)
-val PrimaryPurple = Color(0xFF9419A4)
+val PrimaryB = Color(0xFF0694EC)
+val PrimaryP = Color(0xFF9419A4)
 val OrangeAccent = Color(0xFFFF9800)
 val GreenAccent = Color(0xFF4CAF50)
 
@@ -94,7 +92,7 @@ fun HomeScreen(
                                 text = currentTime.format(timeFormatter),
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = PrimaryPurple
+                                color = PrimaryP
                             )
                             Text(
                                 text = currentTime.format(dateFormatter),
@@ -142,7 +140,7 @@ fun HomeScreen(
                         Icon(
                             painter = painterResource(id = R.drawable.ic_wifi_logo),
                             contentDescription = "Wi-Fi Icon",
-                            tint = PrimaryBlue,
+                            tint = PrimaryB,
                             modifier = Modifier.size(64.dp)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
@@ -282,7 +280,7 @@ fun StatCard(
     label: String,
     icon: Painter,
     modifier: Modifier = Modifier,
-    valueColor: Color = PrimaryPurple
+    valueColor: Color = PrimaryP
 ) {
     Card(
         modifier = modifier.height(100.dp),
@@ -302,7 +300,7 @@ fun StatCard(
             Icon(
                 painter = icon,
                 contentDescription = label,
-                tint = PrimaryBlue,
+                tint = PrimaryB,
                 modifier = Modifier.size(28.dp)
             )
             Spacer(Modifier.height(6.dp))
@@ -343,7 +341,7 @@ fun QuickActionItem(
             Icon(
                 painter = icon,
                 contentDescription = title,
-                tint = PrimaryBlue,
+                tint = PrimaryB,
                 modifier = Modifier.size(28.dp)
             )
             Spacer(modifier = Modifier.width(16.dp))
@@ -360,7 +358,7 @@ fun WhyChooseItem(
     icon: Painter,
     title: String,
     description: String,
-    iconTint: Color = PrimaryBlue
+    iconTint: Color = PrimaryB
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
