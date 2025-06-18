@@ -28,6 +28,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.ui.Alignment
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import kotlinx.coroutines.delay
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -391,6 +393,6 @@ fun PreviewHomeScreen() {
         onNavigateToPackages = {},
         onNavigateToHistory = {},
         onNavigateToProfile = {},
-        selectedRoute = "home"
+        selectedRoute = "home",
     )
 }
