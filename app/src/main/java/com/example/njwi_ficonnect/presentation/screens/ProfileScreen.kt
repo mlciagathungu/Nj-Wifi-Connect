@@ -38,20 +38,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.njwi_ficonnect.presentation.navigation.BottomNavigationBar
 import com.example.njwi_ficonnect.presentation.navigation.Routes
+import com.example.njwi_ficonnect.presentation.viewmodel.ProfileViewModel
 
-// Renamed color vals for clarity and consistency
-val ProfileBlue = Color(0xFF4A90E2)
-val ProfilePurple = Color(0xFF9B59B6)
-val ProfileBackground = Color(0xFFF0F2F5) // Background color
-val ProfileSignOutRed = Color(0xFFE53935) // Red for Sign Out
+val ProfileBlue = Color(0xFF05E819)
+val ProfilePurple = Color(0xFF96D714)
+val ProfileBackground = Color(0xFFF0F2F5)
+val ProfileSignOutRed = Color(0xFFE53935)
+val ProfileCardGreen = Color(0xFF69D56F) // Green for cards
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
-    userName: String = "Micia Gathungu",
-    memberSince: String = "2025",
-    phoneNumber: String = "0793023967",
-    emailAddress: String = "njgathungu23240@gmail.com",
+    profileViewModel: ProfileViewModel,
     onEditProfileClicked: () -> Unit,
     onSecurityClicked: () -> Unit,
     onNotificationsSettingsClicked: () -> Unit,
@@ -63,21 +61,14 @@ fun ProfileScreen(
     onNavigateToProfile: () -> Unit,
     selectedRoute: String
 ) {
-    // State for notification toggles (renamed for clarity)
     var isLowBalanceNotifEnabled by remember { mutableStateOf(true) }
     var isSessionExpiryNotifEnabled by remember { mutableStateOf(true) }
     var isPromotionsNotifEnabled by remember { mutableStateOf(false) }
     var isSystemUpdatesNotifEnabled by remember { mutableStateOf(false) }
 
+    val userProfile = profileViewModel.userProfile
+
     Scaffold(
-//        topBar = {
-//            TopAppBar(
-//                title = { /* Empty, header is in LazyColumn */ },
-//                backgroundColor = Color.Transparent,
-//                elevation = 0.dp,
-//                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-//            )
-//        },
         bottomBar = {
             BottomNavigationBar(
                 onNavigateToHome = onNavigateToHome,
@@ -98,7 +89,6 @@ fun ProfileScreen(
         ) {
             item {
                 Spacer(modifier = Modifier.height(24.dp))
-                // Profile Header
                 Box(
                     modifier = Modifier
                         .size(96.dp)
@@ -119,13 +109,13 @@ fun ProfileScreen(
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = userName,
+                    text = userProfile.name,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
                 )
                 Text(
-                    text = "Member since $memberSince",
+                    text = "Member since 2025",
                     fontSize = 14.sp,
                     color = Color.Gray
                 )
@@ -133,13 +123,14 @@ fun ProfileScreen(
             }
 
             item {
-                // Profile Information Card
+                // Profile Information Card (GREEN)
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 16.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
                     shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = ProfileCardGreen)
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
                         Row(
@@ -151,72 +142,80 @@ fun ProfileScreen(
                                 text = "Profile Information",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color.Black
+                                color = Color.White
                             )
                             IconButton(onClick = onEditProfileClicked) {
-                                Icon(Icons.Default.Edit, contentDescription = "Edit Profile", tint = ProfileBlue)
+                                Icon(Icons.Default.Edit, contentDescription = "Edit Profile", tint = Color.White)
                             }
                         }
                         Spacer(modifier = Modifier.height(16.dp))
                         ProfileInfoRow(
                             icon = Icons.Default.Person,
                             label = "Full Name",
-                            value = userName
+                            value = userProfile.name,
+                            contentColor = Color.White
                         )
                         ProfileInfoRow(
                             icon = Icons.Default.Phone,
                             label = "Phone Number",
-                            value = phoneNumber
+                            value = userProfile.phone,
+                            contentColor = Color.White
                         )
                         ProfileInfoRow(
                             icon = Icons.Default.Email,
                             label = "Email Address",
-                            value = emailAddress
+                            value = userProfile.email,
+                            contentColor = Color.White
                         )
                     }
                 }
             }
 
             item {
-                // Notification Preferences Card
+                // Notification Preferences Card (GREEN)
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 16.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
                     shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = ProfileCardGreen)
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
                         Text(
                             text = "Notification Preferences",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = Color.Black
+                            color = Color.White
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         NotificationToggleRow(
                             label = "Low Balance",
                             description = "Get notified when your balance is low",
                             isChecked = isLowBalanceNotifEnabled,
-                            onCheckedChange = { isLowBalanceNotifEnabled = it }
+                            onCheckedChange = { isLowBalanceNotifEnabled = it },
+                            labelColor = Color.White
                         )
                         NotificationToggleRow(
                             label = "Session Expiry",
                             description = "Alerts before your session expires",
                             isChecked = isSessionExpiryNotifEnabled,
-                            onCheckedChange = { isSessionExpiryNotifEnabled = it }
+                            onCheckedChange = { isSessionExpiryNotifEnabled = it },
+                            labelColor = Color.White
                         )
                         NotificationToggleRow(
                             label = "Promotions",
                             description = "Receive promotional offers and discounts",
                             isChecked = isPromotionsNotifEnabled,
-                            onCheckedChange = { isPromotionsNotifEnabled = it }
+                            onCheckedChange = { isPromotionsNotifEnabled = it },
+                            labelColor = Color.White
                         )
                         NotificationToggleRow(
                             label = "System Updates",
                             description = "Important system updates and maintenance",
                             isChecked = isSystemUpdatesNotifEnabled,
-                            onCheckedChange = { isSystemUpdatesNotifEnabled = it }
+                            onCheckedChange = { isSystemUpdatesNotifEnabled = it },
+                            labelColor = Color.White
                         )
                     }
                 }
@@ -245,7 +244,6 @@ fun ProfileScreen(
 
             item {
                 Spacer(modifier = Modifier.height(24.dp))
-                // Sign Out Button
                 Button(
                     onClick = onSignOutClicked,
                     modifier = Modifier
@@ -296,24 +294,35 @@ fun ProfileScreen(
 }
 
 @Composable
-fun ProfileInfoRow(icon: ImageVector, label: String, value: String) {
+fun ProfileInfoRow(
+    icon: ImageVector,
+    label: String,
+    value: String,
+    contentColor: Color = Color.Black
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(imageVector = icon, contentDescription = label, tint = ProfileBlue, modifier = Modifier.size(24.dp))
+        Icon(imageVector = icon, contentDescription = label, tint = contentColor, modifier = Modifier.size(24.dp))
         Spacer(modifier = Modifier.width(16.dp))
         Column {
-            Text(text = label, fontSize = 12.sp, color = Color.Gray)
-            Text(text = value, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = Color.Black)
+            Text(text = label, fontSize = 12.sp, color = contentColor.copy(alpha = 0.7f))
+            Text(text = value, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = contentColor)
         }
     }
 }
 
 @Composable
-fun NotificationToggleRow(label: String, description: String, isChecked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+fun NotificationToggleRow(
+    label: String,
+    description: String,
+    isChecked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    labelColor: Color = Color.Black
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -322,8 +331,8 @@ fun NotificationToggleRow(label: String, description: String, isChecked: Boolean
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = label, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = Color.Black)
-            Text(text = description, fontSize = 12.sp, color = Color.Gray)
+            Text(text = label, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = labelColor)
+            Text(text = description, fontSize = 12.sp, color = labelColor.copy(alpha = 0.7f))
         }
         Switch(
             checked = isChecked,
@@ -367,7 +376,9 @@ fun OptionItem(icon: ImageVector, title: String, description: String, onClick: (
 @Preview(showBackground = true)
 @Composable
 fun PreviewProfileScreen() {
+    val dummyViewModel = object : ProfileViewModel() {}
     ProfileScreen(
+        profileViewModel = dummyViewModel,
         onEditProfileClicked = { /* preview */ },
         onSecurityClicked = { /* preview */ },
         onNotificationsSettingsClicked = { /* preview */ },

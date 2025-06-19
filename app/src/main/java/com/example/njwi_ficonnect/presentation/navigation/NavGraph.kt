@@ -1,6 +1,8 @@
 package com.example.njwi_ficonnect.presentation.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.rememberNavController
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -14,7 +16,9 @@ import com.example.njwi_ficonnect.presentation.screens.PackagesScreen
 import com.example.njwi_ficonnect.presentation.screens.ConfirmPurchaseScreen
 import com.example.njwi_ficonnect.presentation.screens.HistoryScreen
 import com.example.njwi_ficonnect.presentation.screens.ProfileScreen
+import com.example.njwi_ficonnect.presentation.screens.EditProfileScreen
 import com.example.njwi_ficonnect.presentation.viewmodel.HistoryViewModel
+import com.example.njwi_ficonnect.presentation.viewmodel.ProfileViewModel
 
 object Routes {
     const val AUTH = "auth"
@@ -24,14 +28,15 @@ object Routes {
     const val CONFIRM_PURCHASE = "confirm_purchase"
     const val HISTORY = "history"
     const val PROFILE = "profile"
+    const val EDIT_PROFILE = "edit_profile"
 }
 
 @Composable
 fun WifiNavGraph(navController: NavHostController) {
-    // Provide a single instance of HistoryViewModel for navigation graph scope
     val historyViewModel: HistoryViewModel = viewModel()
+    val profileViewModel: ProfileViewModel = viewModel()
 
-    NavHost(navController = navController, startDestination = Routes.AUTH) {
+    NavHost(navController = navController, startDestination = Routes.HOME) {
         composable(Routes.AUTH) {
             WifiLoginScreen(
                 navController = navController,
@@ -61,7 +66,6 @@ fun WifiNavGraph(navController: NavHostController) {
         composable(Routes.PACKAGES) {
             PackagesScreen(
                 onNavigateToConfirmPurchase = { name, description, duration, access, price ->
-                    // Pass all details as route arguments (encode for safety in real apps)
                     navController.navigate(
                         "${Routes.CONFIRM_PURCHASE}/$name/$description/$duration/$access/$price"
                     )
@@ -72,7 +76,6 @@ fun WifiNavGraph(navController: NavHostController) {
                 onNavigateToProfile = { navController.navigate(Routes.PROFILE) }
             )
         }
-        // Confirm Purchase Route - receives all needed arguments
         composable(
             route = "${Routes.CONFIRM_PURCHASE}/{packageName}/{packageDescription}/{packageDuration}/{packageAccess}/{packagePrice}",
             arguments = listOf(
@@ -96,13 +99,11 @@ fun WifiNavGraph(navController: NavHostController) {
                 packageAccess = packageAccess,
                 packagePrice = packagePrice,
                 onBackClicked = { navController.popBackStack() },
-                // Update the ViewModel on confirmation
                 onPurchaseConfirmed = {
-                    // Go back to packages after confirming payment
                     navController.popBackStack(Routes.PACKAGES, inclusive = false)
                 },
                 onCancel = { navController.popBackStack(Routes.PACKAGES, inclusive = false) },
-                historyViewModel = historyViewModel // Pass the shared ViewModel
+                historyViewModel = historyViewModel
             )
         }
         composable(Routes.HISTORY) {
@@ -113,12 +114,13 @@ fun WifiNavGraph(navController: NavHostController) {
                 onNavigateToProfile = { navController.navigate(Routes.PROFILE) },
                 selectedRoute = Routes.HISTORY,
                 onBrowsePackagesClicked = { navController.navigate(Routes.PACKAGES) },
-                historyViewModel = historyViewModel // Pass the shared ViewModel
+                historyViewModel = historyViewModel
             )
         }
         composable(Routes.PROFILE) {
             ProfileScreen(
-                onEditProfileClicked = { },
+                profileViewModel = profileViewModel,
+                onEditProfileClicked = { navController.navigate(Routes.EDIT_PROFILE) },
                 onSecurityClicked = { },
                 onNotificationsSettingsClicked = { },
                 onHelpSupportClicked = { },
@@ -134,5 +136,19 @@ fun WifiNavGraph(navController: NavHostController) {
                 selectedRoute = Routes.PROFILE
             )
         }
+        composable(Routes.EDIT_PROFILE) {
+            EditProfileScreen(
+                profileViewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
     }
+}
+
+// Add this Preview below your WifiNavGraph function or in the same file:
+@Preview(showBackground = true)
+@Composable
+fun PreviewWholeApp() {
+    val navController = rememberNavController()
+    WifiNavGraph(navController = navController)
 }
