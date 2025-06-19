@@ -1,6 +1,7 @@
 package com.example.njwi_ficonnect.presentation.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -10,7 +11,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ButtonElevation
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -26,7 +26,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.njwi_ficonnect.R // Make sure this points to your app's R file
@@ -133,7 +132,7 @@ fun PackagesScreen(
 
     val filteredPackages = remember(selectedTab) {
         when (selectedTab) {
-            "Packages" -> allPackages
+            "Packages", "All Packages" -> allPackages
             "Hourly" -> allPackages.filter { it.category == "Hourly" }
             "Daily" -> allPackages.filter { it.category == "Daily" }
             "Weekly+" -> allPackages.filter { it.category == "Weekly+" }
@@ -208,16 +207,28 @@ fun PackagesScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(filteredPackages) { pkg ->
-                    PackageCard(pkg) {
-                        // When "Choose This Package" is clicked, navigate to ConfirmPurchaseScreen
-                        onNavigateToConfirmPurchase(
-                            pkg.name,
-                            pkg.description,
-                            pkg.duration,
-                            pkg.dataAllowance, // Using dataAllowance as packageAccess
-                            pkg.price
-                        )
-                    }
+                    PackageCard(pkg,
+                        onChoosePackageClicked = {
+                            // When "Choose This Package" is clicked, navigate to ConfirmPurchaseScreen
+                            onNavigateToConfirmPurchase(
+                                pkg.name,
+                                pkg.description,
+                                pkg.duration,
+                                pkg.dataAllowance, // Using dataAllowance as packageAccess
+                                pkg.price
+                            )
+                        },
+                        onPriceClicked = {
+                            // NEW: When price is clicked, also navigate to ConfirmPurchaseScreen
+                            onNavigateToConfirmPurchase(
+                                pkg.name,
+                                pkg.description,
+                                pkg.duration,
+                                pkg.dataAllowance,
+                                pkg.price
+                            )
+                        }
+                    )
                 }
                 item {
                     Spacer(modifier = Modifier.height(16.dp)) // Padding at the bottom of the list
@@ -226,8 +237,6 @@ fun PackagesScreen(
         }
     }
 }
-
-
 
 @Composable
 fun TabButtonPackage(
@@ -240,30 +249,27 @@ fun TabButtonPackage(
         onClick = onClick,
         modifier = modifier.height(40.dp),
         colors = ButtonDefaults.buttonColors(
-//            backgroundColor = if (isSelected) PrimaryBlue else Color.Transparent,
             contentColor = if (isSelected) Color.White else Color.Gray
         ),
-//        elevation = CardDefaults.cardElevation(
-//            defaultElevation = if (isSelected) 4.dp else 0.dp,
-//            pressedElevation = 8.dp // or whatever value you want for pressed state
-//        ),
-        shape = RoundedCornerShape(10.dp) // Slightly more rounded for tabs
+        shape = RoundedCornerShape(10.dp)
     ) {
         Text(text, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
     }
 }
 
-
 @Composable
-fun PackageCard(pkg: WifiPackage, onChoosePackageClicked: () -> Unit) {
+fun PackageCard(
+    pkg: WifiPackage,
+    onChoosePackageClicked: () -> Unit,
+    onPriceClicked: () -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFB8ECA9) // Use any Color you like
+            containerColor = Color(0xFFB8ECA9)
         )
-//        backgroundColor = Color.White
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Row(
@@ -275,7 +281,7 @@ fun PackageCard(pkg: WifiPackage, onChoosePackageClicked: () -> Unit) {
                     if (pkg.isMostPopular) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
-                                imageVector = Icons.Default.Info, // Use a star icon if you have one
+                                imageVector = Icons.Default.Info,
                                 contentDescription = "Most Popular",
                                 tint = PrimaryBlue,
                                 modifier = Modifier.size(16.dp)
@@ -300,7 +306,8 @@ fun PackageCard(pkg: WifiPackage, onChoosePackageClicked: () -> Unit) {
                     text = "KSh ${pkg.price.toInt()}",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = Color.Black,
+                    modifier = Modifier.clickable { onPriceClicked() }
                 )
             }
             Spacer(modifier = Modifier.height(4.dp))
@@ -315,7 +322,7 @@ fun PackageCard(pkg: WifiPackage, onChoosePackageClicked: () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_duration), // Your duration icon
+                    painter = painterResource(id = R.drawable.ic_duration),
                     contentDescription = "Duration",
                     tint = Color.Gray,
                     modifier = Modifier.size(16.dp)
@@ -324,7 +331,7 @@ fun PackageCard(pkg: WifiPackage, onChoosePackageClicked: () -> Unit) {
                 Text(text = pkg.duration, fontSize = 14.sp, color = Color.Gray)
                 Spacer(modifier = Modifier.width(16.dp))
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_data_allowance), // Your data allowance icon
+                    painter = painterResource(id = R.drawable.ic_data_allowance),
                     contentDescription = "Data Allowance",
                     tint = Color.Gray,
                     modifier = Modifier.size(16.dp)
@@ -355,7 +362,7 @@ fun PackageCard(pkg: WifiPackage, onChoosePackageClicked: () -> Unit) {
                         .fillMaxSize()
                         .background(
                             brush = if (pkg.isMostPopular) Brush.horizontalGradient(
-                                colors = listOf(PrimaryPurple, PrimaryBlue) // Inverted gradient for contrast
+                                colors = listOf(PrimaryPurple, PrimaryBlue)
                             ) else Brush.horizontalGradient(
                                 colors = listOf(PrimaryBlue, PrimaryPurple)
                             )
@@ -373,7 +380,7 @@ fun PackageCard(pkg: WifiPackage, onChoosePackageClicked: () -> Unit) {
 fun FeatureRow(text: String) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 4.dp)) {
         Icon(
-            painter = painterResource(id = R.drawable.ic_dot), // A small green dot icon
+            painter = painterResource(id = R.drawable.ic_dot),
             contentDescription = null,
             tint = GreenActive,
             modifier = Modifier.size(12.dp)

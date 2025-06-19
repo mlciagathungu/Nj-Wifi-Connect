@@ -2,9 +2,11 @@ package com.example.njwi_ficonnect.presentation.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -17,6 +19,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.njwi_ficonnect.R
 import com.example.njwi_ficonnect.presentation.navigation.BottomNavigationBar
+import com.example.njwi_ficonnect.presentation.navigation.Routes
+import com.example.njwi_ficonnect.presentation.viewmodel.HistoryViewModel
+import com.example.njwi_ficonnect.presentation.viewmodel.SessionPayment
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 // Custom color names for clarity
 val HistoryPrimaryBlue = Color(0xFF56F804)
@@ -30,15 +36,19 @@ val HistorySpentGreen = Color(0xFF4CAF50)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryScreen(
-    totalSessions: Int = 0,
-    totalSpent: Double = 0.0,
-    hasSubscriptions: Boolean = false,
     onBrowsePackagesClicked: () -> Unit,
     onNavigateToHome: () -> Unit,
     onNavigateToPackages: () -> Unit,
     onNavigateToHistory: () -> Unit,
-    onNavigateToProfile: () -> Unit
+    onNavigateToProfile: () -> Unit,
+    selectedRoute: String,
+    historyViewModel: HistoryViewModel = viewModel()
 ) {
+    val sessionPayments by historyViewModel.sessionPayments.collectAsState()
+    val totalSessions = historyViewModel.totalSessions
+    val totalSpent = historyViewModel.totalSpent
+    val hasSubscriptions = historyViewModel.hasActiveSubscription
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -154,16 +164,17 @@ fun HistoryScreen(
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
-                if (hasSubscriptions) {
-                    // TODO: Implement LazyColumn to display actual subscription items here
-                    // For now, it's just the "List of subscriptions will go here."
-                    Box(
+                if (sessionPayments.isNotEmpty()) {
+                    // Show the sessionPayments in a LazyColumn
+                    LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(120.dp),
-                        contentAlignment = Alignment.Center
+                            .heightIn(min = 120.dp, max = 240.dp)
                     ) {
-                        Text("List of subscriptions will go here.", color = HistoryTextGray)
+                        items(sessionPayments.reversed()) { payment ->
+                            SubscriptionHistoryItem(payment)
+                            Divider()
+                        }
                     }
                     // Placing the Browse Packages button below the subscriptions list
                     Column(
@@ -267,32 +278,69 @@ fun HistoryScreen(
     }
 }
 
-@Preview(showBackground = true, name = "No Subscriptions")
 @Composable
-fun PreviewHistoryScreen() {
-    HistoryScreen(
-        totalSessions = 0,
-        totalSpent = 0.0,
-        hasSubscriptions = false,
-        onBrowsePackagesClicked = { /* preview */ },
-        onNavigateToHome = { /* preview */ },
-        onNavigateToPackages = { /* preview */ },
-        onNavigateToHistory = { /* preview */ },
-        onNavigateToProfile = { /* preview */ }
-    )
+fun SubscriptionHistoryItem(payment: SessionPayment) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp, horizontal = 16.dp)
+    ) {
+        Text(
+            text = payment.packageName,
+            fontWeight = FontWeight.Bold,
+            fontSize = 16.sp
+        )
+        Text(
+            text = "KSh ${payment.amount.toInt()}",
+            fontWeight = FontWeight.Medium,
+            color = HistorySpentGreen,
+            fontSize = 14.sp
+        )
+        Text(
+            text = "Active: ${if (payment.isActive) "Yes" else "No"}",
+            fontSize = 12.sp,
+            color = if (payment.isActive) Color(0xFF388E3C) else Color(0xFFD32F2F)
+        )
+        Text(
+            text = "Date: ${java.text.SimpleDateFormat("d MMM yyyy, h:mm a").format(java.util.Date(payment.timestamp))}",
+            fontSize = 12.sp,
+            color = HistoryTextGray
+        )
+    }
 }
 
 @Preview(showBackground = true, name = "With Subscriptions")
 @Composable
 fun PreviewHistoryScreenWithData() {
+    // Fake ViewModel for preview
+    val fakePayments = listOf(
+        SessionPayment(
+            sessionId = "1",
+            packageName = "Daily Essential",
+            amount = 150.0,
+            timestamp = System.currentTimeMillis(),
+            isActive = true
+        ),
+        SessionPayment(
+            sessionId = "2",
+            packageName = "Business Package",
+            amount = 1200.0,
+            timestamp = System.currentTimeMillis() - 86400000L,
+            isActive = false
+        )
+    )
+    val fakeViewModel = object : HistoryViewModel() {
+        init {
+            _sessionPayments.value = fakePayments
+        }
+    }
     HistoryScreen(
-        totalSessions = 5,
-        totalSpent = 1250.0,
-        hasSubscriptions = true,
         onBrowsePackagesClicked = { /* preview */ },
         onNavigateToHome = { /* preview */ },
         onNavigateToPackages = { /* preview */ },
         onNavigateToHistory = { /* preview */ },
-        onNavigateToProfile = { /* preview */ }
+        onNavigateToProfile = { /* preview */ },
+        selectedRoute = Routes.HISTORY,
+        historyViewModel = fakeViewModel
     )
 }

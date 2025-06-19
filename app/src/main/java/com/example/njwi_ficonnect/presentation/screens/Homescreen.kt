@@ -1,7 +1,5 @@
 package com.example.njwi_ficonnect.presentation.screens
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,21 +14,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.njwi_ficonnect.R
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.*
 import androidx.compose.ui.Alignment
 import com.example.njwi_ficonnect.presentation.navigation.BottomNavigationBar
 import kotlinx.coroutines.delay
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
+import java.text.SimpleDateFormat
+import java.util.*
 
 // Color constants (move to a common theme file if needed)
 val PrimaryB = Color(0xFF0694EC)
@@ -38,7 +27,6 @@ val PrimaryP = Color(0xFF9419A4)
 val OrangeAccent = Color(0xFFFF9800)
 val GreenAccent = Color(0xFF4CAF50)
 
-@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -52,18 +40,24 @@ fun HomeScreen(
     onNavigateToProfile: () -> Unit = {},
     selectedRoute: String = "home"
 ) {
-    // State for live time and date
-    var currentTime by remember { mutableStateOf(LocalDateTime.now()) }
+    var currentTimeMillis by remember { mutableStateOf(System.currentTimeMillis()) }
 
     // Update time every second
     LaunchedEffect(Unit) {
         while (true) {
-            currentTime = LocalDateTime.now()
+            currentTimeMillis = System.currentTimeMillis()
             delay(1000)
         }
     }
-    val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
-    val dateFormatter = DateTimeFormatter.ofPattern("d/M/yyyy")
+
+    // Time and date formatting compatible with all SDKs
+    val dateObj = Date(currentTimeMillis)
+    val timeText = remember(dateObj) {
+        SimpleDateFormat("HH:mm", Locale.getDefault()).format(dateObj)
+    }
+    val dateText = remember(dateObj) {
+        SimpleDateFormat("d/M/yyyy", Locale.getDefault()).format(dateObj)
+    }
 
     Scaffold(
         topBar = {
@@ -89,13 +83,13 @@ fun HomeScreen(
                         }
                         Column(horizontalAlignment = Alignment.End) {
                             Text(
-                                text = currentTime.format(timeFormatter),
+                                text = timeText,
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = PrimaryP
                             )
                             Text(
-                                text = currentTime.format(dateFormatter),
+                                text = dateText,
                                 fontSize = 14.sp,
                                 color = Color.Gray
                             )
@@ -378,7 +372,6 @@ fun WhyChooseItem(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Preview(showBackground = true)
 @Composable
 fun PreviewHomeScreen() {

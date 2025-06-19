@@ -25,7 +25,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,6 +37,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.njwi_ficonnect.presentation.navigation.BottomNavigationBar
+import com.example.njwi_ficonnect.presentation.navigation.Routes
 
 // Renamed color vals for clarity and consistency
 val ProfileBlue = Color(0xFF4A90E2)
@@ -60,7 +60,8 @@ fun ProfileScreen(
     onNavigateToHome: () -> Unit,
     onNavigateToPackages: () -> Unit,
     onNavigateToHistory: () -> Unit,
-    onNavigateToProfile: () -> Unit
+    onNavigateToProfile: () -> Unit,
+    selectedRoute: String
 ) {
     // State for notification toggles (renamed for clarity)
     var isLowBalanceNotifEnabled by remember { mutableStateOf(true) }
@@ -375,6 +376,7 @@ fun PreviewProfileScreen() {
         onNavigateToHome = { /* preview */ },
         onNavigateToPackages = { /* preview */ },
         onNavigateToHistory = { /* preview */ },
-        onNavigateToProfile = { /* preview */ }
+        onNavigateToProfile = { /* preview */ },
+        selectedRoute = Routes.PROFILE
     )
 }
