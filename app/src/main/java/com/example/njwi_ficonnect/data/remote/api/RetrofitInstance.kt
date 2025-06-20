@@ -9,7 +9,7 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 
 object RetrofitInstance {
-    private const val BASE_URL = "http://YOUR_DJANGO_SERVER_IP:8000/"
+    private const val BASE_URL = "http://127.0.0.1:8000/"
 
     private val json = Json { ignoreUnknownKeys = true }
 

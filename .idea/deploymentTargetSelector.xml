@@ -8,9 +8,6 @@
       <SelectionState runConfigName="PreviewWifiLoginScreen">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="PreviewProfileScreen">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
       <SelectionState runConfigName="PreviewHistoryScreenWithData">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
@@ -18,6 +15,9 @@
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
       <SelectionState runConfigName="PreviewConfirmPurchaseScreenDailyEssential">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="PreviewWholeApp">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>
