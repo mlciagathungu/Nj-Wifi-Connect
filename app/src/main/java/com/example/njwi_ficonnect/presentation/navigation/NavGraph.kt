@@ -36,7 +36,7 @@ fun WifiNavGraph(navController: NavHostController) {
     val historyViewModel: HistoryViewModel = viewModel()
     val profileViewModel: ProfileViewModel = viewModel()
 
-    NavHost(navController = navController, startDestination = Routes.AUTH) {
+    NavHost(navController = navController, startDestination = Routes.HOME) {
         composable(Routes.AUTH) {
             WifiLoginScreen(
                 navController = navController,
