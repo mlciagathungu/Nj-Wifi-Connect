@@ -14,17 +14,7 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,7 +34,7 @@ val ProfileBlue = Color(0xFF05E819)
 val ProfilePurple = Color(0xFF96D714)
 val ProfileBackground = Color(0xFFF0F2F5)
 val ProfileSignOutRed = Color(0xFFE53935)
-val ProfileCardGreen = Color(0xFF69D56F) // Green for cards
+val ProfileCardGreen = Color(0xFF69D56F)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,12 +51,21 @@ fun ProfileScreen(
     onNavigateToProfile: () -> Unit,
     selectedRoute: String
 ) {
-    var isLowBalanceNotifEnabled by remember { mutableStateOf(true) }
-    var isSessionExpiryNotifEnabled by remember { mutableStateOf(true) }
-    var isPromotionsNotifEnabled by remember { mutableStateOf(false) }
-    var isSystemUpdatesNotifEnabled by remember { mutableStateOf(false) }
+    // Optional: Notification toggles persisted to ViewModel or DataStore in a real app
+    var isLowBalanceNotifEnabled by rememberSaveable { mutableStateOf(true) }
+    var isSessionExpiryNotifEnabled by rememberSaveable { mutableStateOf(true) }
+    var isPromotionsNotifEnabled by rememberSaveable { mutableStateOf(false) }
+    var isSystemUpdatesNotifEnabled by rememberSaveable { mutableStateOf(false) }
 
-    val userProfile = profileViewModel.userProfile
+    val userProfile by remember { derivedStateOf { profileViewModel.userProfile } }
+    var refreshing by remember { mutableStateOf(false) }
+
+    // Pull-to-refresh simulation for profile reload
+    fun refreshProfile() {
+        refreshing = true
+        profileViewModel.loadUserProfile()
+        refreshing = false
+    }
 
     Scaffold(
         bottomBar = {
@@ -109,7 +108,7 @@ fun ProfileScreen(
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = userProfile.name,
+                    text = userProfile.name.ifBlank { "Your Name" },
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
@@ -167,6 +166,21 @@ fun ProfileScreen(
                             value = userProfile.email,
                             contentColor = Color.White
                         )
+                        if (profileViewModel.isUpdating) {
+                            LinearProgressIndicator(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 8.dp),
+                                color = Color.White
+                            )
+                        }
+                        if (profileViewModel.errorMessage != null) {
+                            Text(
+                                text = profileViewModel.errorMessage!!,
+                                color = Color.Red,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -310,7 +324,7 @@ fun ProfileInfoRow(
         Spacer(modifier = Modifier.width(16.dp))
         Column {
             Text(text = label, fontSize = 12.sp, color = contentColor.copy(alpha = 0.7f))
-            Text(text = value, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = contentColor)
+            Text(text = value.ifBlank { "—" }, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = contentColor)
         }
     }
 }

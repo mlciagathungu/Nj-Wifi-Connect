@@ -1,29 +1,15 @@
 package com.example.njwi_ficonnect.presentation.viewmodel
 
-
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-
-data class UserProfile(
-    val name: String,
-    val phone: String,
-    val email: String
-)
+import com.example.njwi_ficonnect.firebase.UserProfile
+import com.example.njwi_ficonnect.firebase.UserProfileRepository
 
 open class ProfileViewModel : ViewModel() {
     // Use Compose state so UI auto-updates
-    var userProfile by mutableStateOf(
-        UserProfile(
-            name = "Micia Gathungu",
-            phone = "0793023967",
-            email = "njgathungu23240@gmail.com"
-        )
-    )
+    var userProfile by mutableStateOf(UserProfile())
         private set
 
     var isUpdating by mutableStateOf(false)
@@ -31,21 +17,39 @@ open class ProfileViewModel : ViewModel() {
     var errorMessage by mutableStateOf<String?>(null)
         private set
 
-    fun updateProfile(name: String, phone: String, email: String, onSuccess: () -> Unit) {
+    init {
+        loadUserProfile()
+    }
+
+    fun loadUserProfile() {
         isUpdating = true
         errorMessage = null
-        viewModelScope.launch {
-            delay(1000) // Simulate network/API call
-            // Here you would call your backend API and check result
-            if (name.isBlank() || phone.isBlank() || email.isBlank()) {
-                errorMessage = "All fields are required."
-                isUpdating = false
-                return@launch
-            }
-            // Imagine API call success here:
-            userProfile = UserProfile(name, phone, email)
+        UserProfileRepository.getUserProfile { profile ->
             isUpdating = false
-            onSuccess()
+            if (profile != null) {
+                userProfile = profile
+            } else {
+                errorMessage = "Failed to load profile."
+            }
+        }
+    }
+
+    fun updateProfile(name: String, phone: String, email: String, onSuccess: () -> Unit) {
+        if (name.isBlank() || phone.isBlank() || email.isBlank()) {
+            errorMessage = "All fields are required."
+            return
+        }
+        isUpdating = true
+        errorMessage = null
+        val profile = UserProfile(name, phone, email)
+        UserProfileRepository.saveUserProfile(profile) { success, error ->
+            isUpdating = false
+            if (success) {
+                userProfile = profile
+                onSuccess()
+            } else {
+                errorMessage = error ?: "Failed to update profile."
+            }
         }
     }
 }

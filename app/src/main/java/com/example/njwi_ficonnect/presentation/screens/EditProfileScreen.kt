@@ -15,10 +15,17 @@ fun EditProfileScreen(
     profileViewModel: ProfileViewModel,
     onBack: () -> Unit
 ) {
-    // Local state pre-filled with current profile values
+    // Always reflect latest profile values in state in case of profile update from elsewhere
     var name by remember { mutableStateOf(profileViewModel.userProfile.name) }
     var phone by remember { mutableStateOf(profileViewModel.userProfile.phone) }
     var email by remember { mutableStateOf(profileViewModel.userProfile.email) }
+
+    // Update text fields if profile changes externally (e.g. after reload)
+    LaunchedEffect(profileViewModel.userProfile) {
+        name = profileViewModel.userProfile.name
+        phone = profileViewModel.userProfile.phone
+        email = profileViewModel.userProfile.email
+    }
 
     Scaffold(
         topBar = {
@@ -42,32 +49,47 @@ fun EditProfileScreen(
                 value = name,
                 onValueChange = { name = it },
                 label = { Text("Full Name") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                enabled = !profileViewModel.isUpdating
             )
+            Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
                 value = phone,
                 onValueChange = { phone = it },
                 label = { Text("Phone Number") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                enabled = !profileViewModel.isUpdating
             )
+            Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
                 label = { Text("Email Address") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                enabled = !profileViewModel.isUpdating
             )
             if (profileViewModel.errorMessage != null) {
-                Text(profileViewModel.errorMessage!!, color = MaterialTheme.colorScheme.error)
+                Text(
+                    profileViewModel.errorMessage!!,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
             }
             Spacer(modifier = Modifier.height(24.dp))
             Button(
                 onClick = {
                     profileViewModel.updateProfile(
-                        name, phone, email,
-                        onSuccess = onBack // Go back when done
+                        name.trim(), phone.trim(), email.trim(),
+                        onSuccess = onBack // Go back on success
                     )
                 },
-                enabled = !profileViewModel.isUpdating,
+                enabled = !profileViewModel.isUpdating
+                        && name.isNotBlank()
+                        && phone.isNotBlank()
+                        && email.isNotBlank(),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 if (profileViewModel.isUpdating) {

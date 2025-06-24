@@ -38,7 +38,10 @@ fun HomeScreen(
     onNavigateToPackages: () -> Unit = {},
     onNavigateToHistory: () -> Unit = {},
     onNavigateToProfile: () -> Unit = {},
-    selectedRoute: String = "home"
+    selectedRoute: String = "home",
+    hasActiveSubscription: Boolean = false,
+    activePackageName: String = "",
+    activePackageExpiry: Long = 0L
 ) {
     var currentTimeMillis by remember { mutableStateOf(System.currentTimeMillis()) }
 
@@ -50,7 +53,6 @@ fun HomeScreen(
         }
     }
 
-    // Time and date formatting compatible with all SDKs
     val dateObj = Date(currentTimeMillis)
     val timeText = remember(dateObj) {
         SimpleDateFormat("HH:mm", Locale.getDefault()).format(dateObj)
@@ -76,7 +78,10 @@ fun HomeScreen(
                                 color = Color.Black
                             )
                             Text(
-                                text = "Ready to get connected?",
+                                text = if (hasActiveSubscription)
+                                    "Your package: $activePackageName"
+                                else
+                                    "Ready to get connected?",
                                 fontSize = 14.sp,
                                 color = Color.Gray
                             )
@@ -119,7 +124,7 @@ fun HomeScreen(
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
             item {
-                // Welcome Card
+                // Welcome Card (shows active subscription if present)
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -138,28 +143,52 @@ fun HomeScreen(
                             modifier = Modifier.size(64.dp)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "No Active Connection",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.Black
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Choose a package to get started",
-                            fontSize = 14.sp,
-                            color = Color.Gray
-                        )
+                        if (hasActiveSubscription) {
+                            Text(
+                                text = "Connected: $activePackageName",
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = GreenAccent
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Expires: ${
+                                    SimpleDateFormat("d MMM yyyy, h:mm a", Locale.getDefault())
+                                        .format(Date(activePackageExpiry))
+                                }",
+                                fontSize = 14.sp,
+                                color = Color.Gray
+                            )
+                        } else {
+                            Text(
+                                text = "No Active Connection",
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Choose a package to get started",
+                                fontSize = 14.sp,
+                                color = Color.Gray
+                            )
+                        }
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(
                             onClick = onBrowsePackagesClicked,
                             modifier = Modifier
                                 .fillMaxWidth(0.6f)
                                 .height(48.dp),
-                            colors = ButtonDefaults.buttonColors(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (hasActiveSubscription) GreenAccent else PrimaryB
+                            ),
                             shape = RoundedCornerShape(8.dp)
                         ) {
-                            Text("Browse Packages", color = Color.White, fontSize = 16.sp)
+                            Text(
+                                if (hasActiveSubscription) "Renew/Change Package" else "Browse Packages",
+                                color = Color.White,
+                                fontSize = 16.sp
+                            )
                         }
                     }
                 }
@@ -385,5 +414,8 @@ fun PreviewHomeScreen() {
         onNavigateToHistory = {},
         onNavigateToProfile = {},
         selectedRoute = "home",
+        hasActiveSubscription = true,
+        activePackageName = "Business Package",
+        activePackageExpiry = System.currentTimeMillis() + 3 * 24 * 60 * 60 * 1000 // 3 days from now
     )
 }

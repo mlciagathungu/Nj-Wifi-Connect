@@ -6,18 +6,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,16 +19,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.njwi_ficonnect.R // Make sure this points to your app's R file
-import com.example.njwi_ficonnect.presentation.navigation.BottomNavigationBar// Import your bottom navigation bar
+import com.example.njwi_ficonnect.R
+import com.example.njwi_ficonnect.presentation.navigation.BottomNavigationBar
 
-// Re-using colors
 val PrimaryBlue = Color(0xFF4A90E2)
 val PrimaryPurple = Color(0xFF9B59B6)
-val GreenActive = Color(0xFF4CAF50) // For "High Speed", "Secure Connection"
-val GraySubtle = Color(0xFFF0F2F5) // Background color
+val GreenActive = Color(0xFF4CAF50)
+val GraySubtle = Color(0xFFF0F2F5)
 
-// Data class to represent a Wi-Fi package
 data class WifiPackage(
     val id: String,
     val name: String,
@@ -50,9 +39,10 @@ data class WifiPackage(
     val hasSecureConnection: Boolean,
     val has24_7Support: Boolean,
     val isMostPopular: Boolean = false,
-    val category: String // "Hourly", "Daily", "Weekly+", "All"
+    val category: String
 )
-@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PackagesScreen(
     onNavigateToConfirmPurchase: (
@@ -62,13 +52,12 @@ fun PackagesScreen(
         packageAccess: String,
         packagePrice: Double
     ) -> Unit,
-    // Callbacks for bottom navigation
     onNavigateToHome: () -> Unit,
-    onNavigateToPackages: () -> Unit, // This is the current screen
+    onNavigateToPackages: () -> Unit,
     onNavigateToHistory: () -> Unit,
     onNavigateToProfile: () -> Unit
 ) {
-    // Dummy data for packages (replace with real data from your backend later)
+    // TODO: Replace with real repository in production!
     val allPackages = remember {
         listOf(
             WifiPackage(
@@ -128,15 +117,14 @@ fun PackagesScreen(
         )
     }
 
-    var selectedTab by remember { mutableStateOf("All Packages") }
+    val tabs = listOf("All", "Hourly", "Daily", "Weekly+")
+    var selectedTabIndex by remember { mutableStateOf(0) }
+    val selectedTab = tabs[selectedTabIndex]
 
-    val filteredPackages = remember(selectedTab) {
+    val filteredPackages = remember(selectedTab, allPackages) {
         when (selectedTab) {
-            "Packages", "All Packages" -> allPackages
-            "Hourly" -> allPackages.filter { it.category == "Hourly" }
-            "Daily" -> allPackages.filter { it.category == "Daily" }
-            "Weekly+" -> allPackages.filter { it.category == "Weekly+" }
-            else -> allPackages // Should not happen
+            "All" -> allPackages
+            else -> allPackages.filter { it.category == selectedTab }
         }
     }
 
@@ -155,50 +143,39 @@ fun PackagesScreen(
                 onNavigateToPackages = onNavigateToPackages,
                 onNavigateToHistory = onNavigateToHistory,
                 onNavigateToProfile = onNavigateToProfile,
-                selectedRoute = "packages" // Indicate current selected tab
+                selectedRoute = "packages"
             )
         }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues) // Apply padding from Scaffold
+                .padding(paddingValues)
                 .background(GraySubtle)
         ) {
-            // Category Tabs
-            Row(
+            // TabRow for package categories
+            TabRow(
+                selectedTabIndex = selectedTabIndex,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 4.dp, vertical = 4.dp)
-                    .background(Color.White, RoundedCornerShape(10.dp))
-                    .padding(2.dp),
-                horizontalArrangement = Arrangement.SpaceAround,
-                verticalAlignment = Alignment.CenterVertically
+                    .background(Color.White, RoundedCornerShape(10.dp)),
+                containerColor = Color.White,
+                contentColor = PrimaryBlue
             ) {
-                TabButtonPackage(
-                    text = "Packages",
-                    isSelected = selectedTab == "All Packages",
-                    onClick = { selectedTab = "All Packages" },
-                    modifier = Modifier.weight(1f)
-                )
-                TabButtonPackage(
-                    text = "Hourly",
-                    isSelected = selectedTab == "Hourly",
-                    onClick = { selectedTab = "Hourly" },
-                    modifier = Modifier.weight(1f)
-                )
-                TabButtonPackage(
-                    text = "Daily",
-                    isSelected = selectedTab == "Daily",
-                    onClick = { selectedTab = "Daily" },
-                    modifier = Modifier.weight(1f)
-                )
-                TabButtonPackage(
-                    text = "Weekly+",
-                    isSelected = selectedTab == "Weekly+",
-                    onClick = { selectedTab = "Weekly+" },
-                    modifier = Modifier.weight(1f)
-                )
+                tabs.forEachIndexed { index, title ->
+                    Tab(
+                        selected = selectedTabIndex == index,
+                        onClick = { selectedTabIndex = index },
+                        text = {
+                            Text(
+                                title,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 13.sp,
+                                color = if (selectedTabIndex == index) PrimaryBlue else Color.Gray
+                            )
+                        }
+                    )
+                }
             }
 
             LazyColumn(
@@ -209,17 +186,15 @@ fun PackagesScreen(
                 items(filteredPackages) { pkg ->
                     PackageCard(pkg,
                         onChoosePackageClicked = {
-                            // When "Choose This Package" is clicked, navigate to ConfirmPurchaseScreen
                             onNavigateToConfirmPurchase(
                                 pkg.name,
                                 pkg.description,
                                 pkg.duration,
-                                pkg.dataAllowance, // Using dataAllowance as packageAccess
+                                pkg.dataAllowance,
                                 pkg.price
                             )
                         },
                         onPriceClicked = {
-                            // NEW: When price is clicked, also navigate to ConfirmPurchaseScreen
                             onNavigateToConfirmPurchase(
                                 pkg.name,
                                 pkg.description,
@@ -231,29 +206,10 @@ fun PackagesScreen(
                     )
                 }
                 item {
-                    Spacer(modifier = Modifier.height(16.dp)) // Padding at the bottom of the list
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
         }
-    }
-}
-
-@Composable
-fun TabButtonPackage(
-    text: String,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Button(
-        onClick = onClick,
-        modifier = modifier.height(40.dp),
-        colors = ButtonDefaults.buttonColors(
-            contentColor = if (isSelected) Color.White else Color.Gray
-        ),
-        shape = RoundedCornerShape(10.dp)
-    ) {
-        Text(text, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
     }
 }
 
@@ -340,7 +296,6 @@ fun PackageCard(
                 Text(text = pkg.dataAllowance, fontSize = 14.sp, color = Color.Gray)
             }
             Spacer(modifier = Modifier.height(16.dp))
-            // Features (High Speed, No Setup Fee, Secure Connection, 24/7 Support)
             Column {
                 if (pkg.hasHighSpeed) FeatureRow("High Speed")
                 if (pkg.hasNoSetupFee) FeatureRow("No Setup Fee")

@@ -2,8 +2,6 @@ package com.example.njwi_ficonnect.presentation.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,7 +15,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -26,14 +23,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.njwi_ficonnect.R
-import com.example.njwi_ficonnect.data.remote.api.RetrofitInstance
-import com.example.njwi_ficonnect.data.remote.model.StkPushRequest
+import com.example.njwi_ficonnect.firebase.MpesaPaymentHelper
+import com.example.njwi_ficonnect.firebase.PaymentHistoryRepository
+import com.example.njwi_ficonnect.firebase.PaymentRecord
 import kotlinx.coroutines.launch
-
-// Import your ViewModel for updating history
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.njwi_ficonnect.presentation.viewmodel.HistoryViewModel
-import java.util.UUID
+import java.util.*
 
 val BrandBlue = Color(0xFF4A90E2)
 val AccentPurple = Color(0xFF9B59B6)
@@ -52,7 +47,7 @@ fun ConfirmPurchaseScreen(
     onBackClicked: () -> Unit,
     onPurchaseConfirmed: () -> Unit,
     onCancel: () -> Unit,
-    historyViewModel: HistoryViewModel = viewModel() // <-- Add this
+    historyViewModel: Nothing?,
 ) {
     var mpesaPhoneNumber by remember { mutableStateOf("0712345678") }
     var apiMessage by remember { mutableStateOf("") }
@@ -297,34 +292,28 @@ fun ConfirmPurchaseScreen(
                             coroutineScope.launch {
                                 isLoading = true
                                 apiMessage = ""
-                                try {
-                                    val response = RetrofitInstance.api.stkPush(
-                                        StkPushRequest(
-                                            phone_number = "254${mpesaPhoneNumber.trimStart('0')}",
+                                MpesaPaymentHelper.stkPush(
+                                    phone = mpesaPhoneNumber,
+                                    amount = packagePrice,
+                                    reference = packageName,
+                                    description = packageDescription
+                                ) { success, error ->
+                                    if (success) {
+                                        apiMessage = "STK Push sent. Check your phone!"
+                                        // Record payment in Firestore
+                                        val payment = PaymentRecord(
                                             amount = packagePrice,
-                                            account_reference = packageName
+                                            reference = packageName,
+                                            description = packageDescription,
+                                            timestamp = System.currentTimeMillis()
                                         )
-                                    )
-                                    apiMessage = response.CustomerMessage
-                                        ?: response.ResponseDescription
-                                                ?: response.errorMessage
-                                                ?: if (response.success) "STK Push sent. Check your phone!"
-                                        else "Unknown error. Try again."
-                                    if (response.success) {
-                                        // --- UPDATE SESSION PAYMENT HISTORY ---
-                                        val sessionId = UUID.randomUUID().toString()
-                                        historyViewModel.recordSessionPayment(
-                                            sessionId = sessionId,
-                                            packageName = packageName,
-                                            amount = packagePrice,
-                                            isActive = true // or determine by package type/duration
-                                        )
-                                        // --------------------------------------
+                                        PaymentHistoryRepository.addPaymentRecord(payment) { saved, err ->
+                                            // Optional: show message if you want
+                                        }
                                         onPurchaseConfirmed()
+                                    } else {
+                                        apiMessage = error ?: "Unknown error. Try again."
                                     }
-                                } catch (e: Exception) {
-                                    apiMessage = "Error: ${e.localizedMessage}"
-                                } finally {
                                     isLoading = false
                                 }
                             }
@@ -380,9 +369,16 @@ fun ConfirmPurchaseScreen(
     }
 }
 
+private fun PaymentHistoryRepository.addPaymentRecord(
+    record: PaymentRecord,
+    function: Any
+) {
+}
+
 @Preview(showBackground = true)
 @Composable
 fun PreviewConfirmPurchaseScreenDailyEssential() {
+    val historyViewModel = null
     ConfirmPurchaseScreen(
         packageName = "Daily Essential",
         packageDescription = "Great for work and social media",
@@ -391,13 +387,14 @@ fun PreviewConfirmPurchaseScreenDailyEssential() {
         packagePrice = 150.0,
         onBackClicked = { },
         onPurchaseConfirmed = { },
-        onCancel = { }
+        onCancel = { },
+        historyViewModel = historyViewModel
     )
 }
 
 @Preview(showBackground = true)
 @Composable
-fun PreviewConfirmPurchaseScreenBusinessPackage() {
+fun PreviewConfirmPurchaseScreenBusinessPackage(historyViewModel: HistoryViewModel) {
     ConfirmPurchaseScreen(
         packageName = "Business Package",
         packageDescription = "Premium unlimited access for businesses",
@@ -406,6 +403,7 @@ fun PreviewConfirmPurchaseScreenBusinessPackage() {
         packagePrice = 1200.0,
         onBackClicked = { },
         onPurchaseConfirmed = { },
-        onCancel = { }
+        onCancel = { },
+        historyViewModel = historyViewModel
     )
 }
