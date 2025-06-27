@@ -70,27 +70,16 @@ fun WifiLoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
-            // Logo and Text
             Image(
                 painter = painterResource(id = R.drawable.ic_wifi_logo),
                 contentDescription = "App Logo",
                 modifier = Modifier.size(60.dp)
             )
             Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "NJ Connect",
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
-            )
-            Text(
-                text = "Affordable Wi-Fi for Everyone",
-                fontSize = 12.sp,
-                color = Color.Gray
-            )
+            Text("NJ Connect", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+            Text("Affordable Wi-Fi for Everyone", fontSize = 12.sp, color = Color.Gray)
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Center card vertically
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -98,98 +87,64 @@ fun WifiLoginScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Card(
-                    modifier = Modifier
-                        .fillMaxWidth(0.97f)
-                        .heightIn(min = 440.dp, max = 550.dp),
+                    modifier = Modifier.fillMaxWidth(0.97f).heightIn(min = 440.dp, max = 550.dp),
                     elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFCAEAA9)
-                    )
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFCAEAA9))
                 ) {
                     Column(
-                        modifier = Modifier
-                            .padding(horizontal = 18.dp, vertical = 14.dp)
-                            .fillMaxSize(),
+                        modifier = Modifier.padding(horizontal = 18.dp, vertical = 14.dp).fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Top
                     ) {
-                        // Tab Row with improved spacing and padding
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 4.dp, horizontal = 0.dp)
+                                .padding(vertical = 4.dp)
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(Color(0xFFE0E0E0)),
                             horizontalArrangement = Arrangement.SpaceEvenly,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            TabButton(
-                                text = "Sign In",
-                                isSelected = selectedTab == 0,
-                                onClick = {
-                                    selectedTab = 0
-                                    phoneNumber = ""
-                                    password = ""
-                                    fullName = ""
-                                    emailAddress = ""
-                                    confirmPassword = ""
-                                    localError = null
-                                    viewModel.reset()
-                                },
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .padding(start = 2.dp, end = 1.dp, top = 2.dp, bottom = 2.dp)
-                            )
-                            TabButton(
-                                text = "Create Account",
-                                isSelected = selectedTab == 1,
-                                onClick = {
-                                    selectedTab = 1
-                                    phoneNumber = ""
-                                    password = ""
-                                    fullName = ""
-                                    emailAddress = ""
-                                    confirmPassword = ""
-                                    localError = null
-                                    viewModel.reset()
-                                },
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .padding(start = 1.dp, end = 2.dp, top = 2.dp, bottom = 2.dp)
-                            )
+                            TabButton("Sign In", selectedTab == 0, {
+                                selectedTab = 0
+                                emailAddress = ""
+                                password = ""
+                                fullName = ""
+                                phoneNumber = ""
+                                confirmPassword = ""
+                                localError = null
+                                viewModel.reset()
+                            }, Modifier.weight(1f).padding(2.dp))
+                            TabButton("Create Account", selectedTab == 1, {
+                                selectedTab = 1
+                                phoneNumber = ""
+                                password = ""
+                                fullName = ""
+                                emailAddress = ""
+                                confirmPassword = ""
+                                localError = null
+                                viewModel.reset()
+                            }, Modifier.weight(1f).padding(2.dp))
                         }
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        // Error texts
                         localError?.let {
-                            Text(
-                                text = it,
-                                color = Color.Red,
-                                fontSize = 12.sp,
-                                modifier = Modifier.padding(bottom = 2.dp)
-                            )
+                            Text(it, color = Color.Red, fontSize = 12.sp, modifier = Modifier.padding(bottom = 2.dp))
                         }
                         if (authState is AuthState.Error) {
-                            Text(
-                                text = (authState as AuthState.Error).message,
-                                color = Color.Red,
-                                fontSize = 12.sp,
-                                modifier = Modifier.padding(bottom = 2.dp)
-                            )
+                            Text((authState as AuthState.Error).message, color = Color.Red, fontSize = 12.sp, modifier = Modifier.padding(bottom = 2.dp))
                         }
 
-                        if (selectedTab == 1) {
+                        if (selectedTab == 0) {
                             OutlinedTextField(
-                                value = fullName,
-                                onValueChange = { fullName = it },
-                                label = { Text("Full Name") },
-                                leadingIcon = { Icon(Icons.Default.Person, contentDescription = "Person Icon") },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 4.dp),
+                                value = emailAddress,
+                                onValueChange = { emailAddress = it },
+                                label = { Text("Email Address") },
+                                leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                                modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
                                 singleLine = true,
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = PrimaryBlue,
@@ -199,33 +154,42 @@ fun WifiLoginScreen(
                             Spacer(modifier = Modifier.height(6.dp))
                         }
 
-                        OutlinedTextField(
-                            value = phoneNumber,
-                            onValueChange = { phoneNumber = it },
-                            label = { Text("Phone Number (0712345678)") },
-                            leadingIcon = { Icon(Icons.Default.Phone, contentDescription = "Phone Icon") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 2.dp),
-                            singleLine = true,
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = PrimaryBlue,
-                                unfocusedBorderColor = Color.LightGray
-                            )
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-
                         if (selectedTab == 1) {
+                            OutlinedTextField(
+                                value = fullName,
+                                onValueChange = { fullName = it },
+                                label = { Text("Full Name") },
+                                leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                                modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                                singleLine = true,
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = PrimaryBlue,
+                                    unfocusedBorderColor = Color.LightGray
+                                )
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            OutlinedTextField(
+                                value = phoneNumber,
+                                onValueChange = { phoneNumber = it },
+                                label = { Text("Phone Number (0712345678)") },
+                                leadingIcon = { Icon(Icons.Default.Phone, contentDescription = null) },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                                modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
+                                singleLine = true,
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = PrimaryBlue,
+                                    unfocusedBorderColor = Color.LightGray
+                                )
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
                             OutlinedTextField(
                                 value = emailAddress,
                                 onValueChange = { emailAddress = it },
                                 label = { Text("Email Address") },
-                                leadingIcon = { Icon(Icons.Default.Email, contentDescription = "Email Icon") },
+                                leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 2.dp),
+                                modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
                                 singleLine = true,
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = PrimaryBlue,
@@ -239,28 +203,22 @@ fun WifiLoginScreen(
                             value = password,
                             onValueChange = { password = it },
                             label = { Text("Password") },
-                            leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Lock Icon") },
+                            leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                             trailingIcon = {
                                 IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                                    Icon(
-                                        painter = painterResource(
-                                            id = if (passwordVisible) R.drawable.ic_visibility_on else R.drawable.ic_visibility_off
-                                        ),
-                                        contentDescription = "Toggle password visibility"
-                                    )
+                                    Icon(painter = painterResource(id = if (passwordVisible) R.drawable.ic_visibility_on else R.drawable.ic_visibility_off), contentDescription = null)
                                 }
                             },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 2.dp),
+                            modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
                             singleLine = true,
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = PrimaryBlue,
                                 unfocusedBorderColor = Color.LightGray
                             )
                         )
+
                         Spacer(modifier = Modifier.height(6.dp))
 
                         if (selectedTab == 1) {
@@ -268,22 +226,15 @@ fun WifiLoginScreen(
                                 value = confirmPassword,
                                 onValueChange = { confirmPassword = it },
                                 label = { Text("Confirm Password") },
-                                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Lock Icon") },
+                                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                                 trailingIcon = {
                                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                                        Icon(
-                                            painter = painterResource(
-                                                id = if (passwordVisible) R.drawable.ic_visibility_on else R.drawable.ic_visibility_off
-                                            ),
-                                            contentDescription = "Toggle password visibility"
-                                        )
+                                        Icon(painter = painterResource(id = if (passwordVisible) R.drawable.ic_visibility_on else R.drawable.ic_visibility_off), contentDescription = null)
                                     }
                                 },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 2.dp),
+                                modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
                                 singleLine = true,
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = PrimaryBlue,
@@ -293,12 +244,17 @@ fun WifiLoginScreen(
                             Spacer(modifier = Modifier.height(8.dp))
                         }
 
-                        // Button
                         Button(
                             onClick = {
                                 localError = null
                                 if (selectedTab == 0) {
-                                    viewModel.signIn(phoneNumber, password)
+                                    viewModel.signIn(emailAddress, password){ hasProfile ->
+                                        if (hasProfile) {
+                                            navController.navigate("home") // or whatever route
+                                        } else {
+                                            navController.navigate("edit_profile") // prompt to finish profile
+                                        }
+                                    }
                                 } else {
                                     if (password != confirmPassword) {
                                         localError = "Passwords do not match"
@@ -307,23 +263,17 @@ fun WifiLoginScreen(
                                     }
                                 }
                             },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(38.dp),
+                            modifier = Modifier.fillMaxWidth().height(38.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                             contentPadding = PaddingValues(),
                             shape = RoundedCornerShape(8.dp),
                             enabled = authState !is AuthState.Loading
                         ) {
                             Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(
-                                        brush = Brush.horizontalGradient(
-                                            colors = listOf(PrimaryBlue, PrimaryPurple)
-                                        ),
-                                        shape = RoundedCornerShape(8.dp)
-                                    ),
+                                modifier = Modifier.fillMaxSize().background(
+                                    brush = Brush.horizontalGradient(colors = listOf(PrimaryBlue, PrimaryPurple)),
+                                    shape = RoundedCornerShape(8.dp)
+                                ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 if (authState is AuthState.Loading) {
@@ -347,18 +297,16 @@ fun WifiLoginScreen(
                             }
                         }
 
-                        // Terms only for sign up (to keep card balanced)
                         if (selectedTab == 1) {
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "By continuing, you agree to our Terms of Service and Privacy Policy",
+                                "By continuing, you agree to our Terms of Service and Privacy Policy",
                                 fontSize = 9.sp,
                                 color = Color.Gray,
                                 modifier = Modifier.padding(horizontal = 8.dp)
                             )
                         }
 
-                        // Navigate on success
                         if (authState is AuthState.Success) {
                             LaunchedEffect(authState, selectedTab) {
                                 viewModel.reset()
@@ -372,7 +320,6 @@ fun WifiLoginScreen(
             }
 
             Spacer(modifier = Modifier.height(10.dp))
-            // Only show terms at the bottom for login (for compactness)
             if (selectedTab == 0) {
                 Text(
                     text = "By continuing, you agree to our Terms of Service and Privacy Policy",
@@ -394,8 +341,7 @@ fun TabButton(
 ) {
     Button(
         onClick = onClick,
-        modifier = modifier
-            .height(32.dp),
+        modifier = modifier.height(32.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = if (isSelected) Color.White else Color.Transparent,
             contentColor = if (isSelected) PrimaryBlue else Color.Gray
@@ -403,12 +349,7 @@ fun TabButton(
         shape = RoundedCornerShape(8.dp),
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
     ) {
-        Text(
-            text = text,
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 14.sp,
-            maxLines = 1
-        )
+        Text(text, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, maxLines = 1)
     }
 }
 

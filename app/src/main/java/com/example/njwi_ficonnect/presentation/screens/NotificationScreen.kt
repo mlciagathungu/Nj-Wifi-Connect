@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -53,7 +54,7 @@ fun NotificationsScreen(
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            NotificationToggleRow(
+            NotificationToggleRo(
                 label = "Low Balance",
                 description = "Get notified when your balance is low",
                 isChecked = isLowBalanceNotifEnabled,
@@ -62,7 +63,7 @@ fun NotificationsScreen(
                     onSettingChanged?.invoke("low_balance", it)
                 }
             )
-            NotificationToggleRow(
+            NotificationToggleRo(
                 label = "Session Expiry",
                 description = "Alerts before your session expires",
                 isChecked = isSessionExpiryNotifEnabled,
@@ -71,7 +72,7 @@ fun NotificationsScreen(
                     onSettingChanged?.invoke("session_expiry", it)
                 }
             )
-            NotificationToggleRow(
+            NotificationToggleRo(
                 label = "Promotions",
                 description = "Receive promotional offers and discounts",
                 isChecked = isPromotionsNotifEnabled,
@@ -80,7 +81,7 @@ fun NotificationsScreen(
                     onSettingChanged?.invoke("promotions", it)
                 }
             )
-            NotificationToggleRow(
+            NotificationToggleRo(
                 label = "System Updates",
                 description = "Important updates and maintenance alerts",
                 isChecked = isSystemUpdatesNotifEnabled,
@@ -94,7 +95,7 @@ fun NotificationsScreen(
 }
 
 @Composable
-fun NotificationToggleRow(
+fun NotificationToggleRo(
     label: String,
     description: String,
     isChecked: Boolean,

@@ -1,5 +1,7 @@
 package com.example.njwi_ficonnect.presentation.navigation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
@@ -9,16 +11,21 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.example.njwi_ficonnect.presentation.components.AuthViewModel
 import com.example.njwi_ficonnect.presentation.components.ForgotPasswordScreen
 import com.example.njwi_ficonnect.presentation.components.WifiLoginScreen
 import com.example.njwi_ficonnect.presentation.screens.HomeScreen
 import com.example.njwi_ficonnect.presentation.screens.PackagesScreen
 import com.example.njwi_ficonnect.presentation.screens.ConfirmPurchaseScreen
-import com.example.njwi_ficonnect.presentation.screens.HistoryScreen
 import com.example.njwi_ficonnect.presentation.screens.ProfileScreen
 import com.example.njwi_ficonnect.presentation.screens.EditProfileScreen
+import com.example.njwi_ficonnect.presentation.screens.HistoryScreen
+import com.example.njwi_ficonnect.presentation.screens.PaymentHistoryScreen
+import com.example.njwi_ficonnect.presentation.screens.PaymentSuccessScreen
 import com.example.njwi_ficonnect.presentation.viewmodel.HistoryViewModel
+import com.example.njwi_ficonnect.presentation.viewmodel.PackageHistoryViewModel
 import com.example.njwi_ficonnect.presentation.viewmodel.ProfileViewModel
+
 
 object Routes {
     const val AUTH = "auth"
@@ -29,14 +36,22 @@ object Routes {
     const val HISTORY = "history"
     const val PROFILE = "profile"
     const val EDIT_PROFILE = "edit_profile"
+    const val PAYMENT_HISTORY = "payment_history"
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun WifiNavGraph(navController: NavHostController) {
+fun WifiNavGraph(navController: NavHostController,
+                 authViewModel: AuthViewModel = viewModel() // ✅ Add this
+) {
     val historyViewModel: HistoryViewModel = viewModel()
     val profileViewModel: ProfileViewModel = viewModel()
+    val packageHistoryViewModel: PackageHistoryViewModel = viewModel()
 
-    NavHost(navController = navController, startDestination = Routes.HOME) {
+
+
+
+    NavHost(navController = navController, startDestination = Routes.AUTH) {
         composable(Routes.AUTH) {
             WifiLoginScreen(
                 navController = navController,
@@ -46,13 +61,18 @@ fun WifiNavGraph(navController: NavHostController) {
         composable(Routes.FORGOT_PASSWORD) {
             ForgotPasswordScreen(
                 navController = navController,
-                onResetPasswordClicked = { navController.popBackStack(Routes.AUTH, inclusive = false) },
-                onBackToLoginClicked = { navController.popBackStack(Routes.AUTH, inclusive = false) }
+                onBackToLoginClicked = { navController.navigate("login") },
+                onResetPasswordClicked = { email ->
+                    authViewModel.sendPasswordReset(email)
+                },
+                authViewModel = TODO()
             )
         }
+
         composable(Routes.HOME) {
             HomeScreen(
-                userName = "User",
+                profileViewModel = viewModel(), // 👈 Ensure it's passed here                authViewModel = authViewModel,
+
                 onBrowsePackagesClicked = { navController.navigate(Routes.PACKAGES) },
                 onMySubscriptionsClicked = { navController.navigate(Routes.HISTORY) },
                 onAccountSettingsClicked = { navController.navigate(Routes.PROFILE) },
@@ -60,7 +80,8 @@ fun WifiNavGraph(navController: NavHostController) {
                 onNavigateToPackages = { navController.navigate(Routes.PACKAGES) },
                 onNavigateToHistory = { navController.navigate(Routes.HISTORY) },
                 onNavigateToProfile = { navController.navigate(Routes.PROFILE) },
-                selectedRoute = Routes.HOME
+                packageHistoryViewModel = packageHistoryViewModel,
+                        selectedRoute = Routes.HOME
             )
         }
         composable(Routes.PACKAGES) {
@@ -91,6 +112,8 @@ fun WifiNavGraph(navController: NavHostController) {
             val packageDuration = backStackEntry.arguments?.getString("packageDuration") ?: ""
             val packageAccess = backStackEntry.arguments?.getString("packageAccess") ?: ""
             val packagePrice = backStackEntry.arguments?.getFloat("packagePrice")?.toDouble() ?: 0.0
+            val historyViewModel: HistoryViewModel = viewModel()
+
 
             ConfirmPurchaseScreen(
                 packageName = packageName,
@@ -98,13 +121,11 @@ fun WifiNavGraph(navController: NavHostController) {
                 packageDuration = packageDuration,
                 packageAccess = packageAccess,
                 packagePrice = packagePrice,
+                HistoryViewModel = historyViewModel, // ✅ here
                 onBackClicked = { navController.popBackStack() },
-                onPurchaseConfirmed = {
-                    navController.popBackStack(Routes.PACKAGES, inclusive = false)
-                },
-                onCancel = { navController.popBackStack(Routes.PACKAGES, inclusive = false) },
-                historyViewModel = historyViewModel
-            )
+                navController = navController,
+
+            ) { navController.popBackStack(Routes.PACKAGES, inclusive = false) }
         }
         composable(Routes.HISTORY) {
             HistoryScreen(
@@ -114,12 +135,15 @@ fun WifiNavGraph(navController: NavHostController) {
                 onNavigateToProfile = { navController.navigate(Routes.PROFILE) },
                 selectedRoute = Routes.HISTORY,
                 onBrowsePackagesClicked = { navController.navigate(Routes.PACKAGES) },
-                historyViewModel = historyViewModel
+                historyViewModel = historyViewModel,
+                packageHistoryViewModel =packageHistoryViewModel,
             )
         }
+
         composable(Routes.PROFILE) {
             ProfileScreen(
                 profileViewModel = profileViewModel,
+                authViewModel = authViewModel,
                 onEditProfileClicked = { navController.navigate(Routes.EDIT_PROFILE) },
                 onSecurityClicked = { },
                 onNotificationsSettingsClicked = { },
@@ -142,10 +166,25 @@ fun WifiNavGraph(navController: NavHostController) {
                 onBack = { navController.popBackStack() }
             )
         }
+        composable("payment_success") {
+            PaymentSuccessScreen(
+                onBackToHome = {
+                    navController.navigate("home") {
+                        popUpTo("confirm_purchase") { inclusive = true }
+                    }
+                }
+            )
+        }
+        composable(Routes.PAYMENT_HISTORY) {
+            PaymentHistoryScreen()
+        }
+
+
     }
 }
 
 // Add this Preview below your WifiNavGraph function or in the same file:
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview(showBackground = true)
 @Composable
 fun PreviewWholeApp() {

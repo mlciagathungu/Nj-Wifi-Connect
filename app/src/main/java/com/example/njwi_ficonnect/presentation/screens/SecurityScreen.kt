@@ -1,6 +1,7 @@
 package com.example.njwi_ficonnect.presentation.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
@@ -14,6 +15,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.graphics.Color
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -91,10 +93,11 @@ fun SecurityScreen(
                             onValueChange = { email = it },
                             label = { Text("Email Address") },
                             singleLine = true,
-                            keyboardOptions = androidx.compose.ui.text.input.KeyboardOptions(
+                            keyboardOptions = KeyboardOptions(
                                 keyboardType = KeyboardType.Email,
                                 imeAction = ImeAction.Done
                             ),
+
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
@@ -130,12 +133,3 @@ fun SecurityScreen(
     }
 }
 
-@Composable
-fun KeyboardOptions(keyboardType: KeyboardType, imeAction: ImeAction) {
-    TODO("Not yet implemented")
-}
-
-@Composable
-fun KeyboardOptions(keyboardType: KeyboardType, imeAction: ImeAction) {
-    TODO("Not yet implemented")
-}

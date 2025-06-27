@@ -64,7 +64,7 @@ fun PackagesScreen(
                 id = "qb1",
                 name = "Quick Browse",
                 description = "Perfect for quick Browse and messaging",
-                price = 50.0,
+                price = 1.0,
                 duration = "2h",
                 dataAllowance = "0.5GB",
                 hasHighSpeed = true,

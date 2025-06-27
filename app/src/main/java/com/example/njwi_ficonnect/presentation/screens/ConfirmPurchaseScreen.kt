@@ -1,5 +1,6 @@
 package com.example.njwi_ficonnect.presentation.screens
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -19,16 +20,24 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.example.njwi_ficonnect.R
-import com.example.njwi_ficonnect.firebase.MpesaPaymentHelper
 import com.example.njwi_ficonnect.firebase.PaymentHistoryRepository
-import com.example.njwi_ficonnect.firebase.PaymentRecord
-import kotlinx.coroutines.launch
+import com.example.njwi_ficonnect.network.RetrofitClient
+import com.example.njwi_ficonnect.network.model.MpesaRequest
+import com.example.njwi_ficonnect.network.model.MpesaResponse
 import com.example.njwi_ficonnect.presentation.viewmodel.HistoryViewModel
-import java.util.*
+import com.example.njwi_ficonnect.presentation.viewmodel.saveToFirestore
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import java.io.IOException
+import com.example.njwi_ficonnect.firebase.PaymentRecord
+
+
 
 val BrandBlue = Color(0xFF4A90E2)
 val AccentPurple = Color(0xFF9B59B6)
@@ -36,18 +45,19 @@ val MpesaGreen = Color(0xFF4CAF50)
 val SecureBadgeYellow = Color(0xFFFFF9C4)
 val SecureBadgeText = Color(0xFFC58400)
 
+// Declare state at the top of your Composable
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConfirmPurchaseScreen(
+    navController: NavHostController, // 👈 Add this
     packageName: String,
     packageDescription: String,
     packageDuration: String,
     packageAccess: String,
     packagePrice: Double,
+    HistoryViewModel: HistoryViewModel, // ✅ Add this line
     onBackClicked: () -> Unit,
-    onPurchaseConfirmed: () -> Unit,
     onCancel: () -> Unit,
-    historyViewModel: Nothing?,
 ) {
     var mpesaPhoneNumber by remember { mutableStateOf("0712345678") }
     var apiMessage by remember { mutableStateOf("") }
@@ -276,7 +286,6 @@ fun ConfirmPurchaseScreen(
                     }
                 }
 
-                // Show Confirm and Cancel after pressed
                 if (showConfirmationButtons) {
                     if (isLoading) {
                         CircularProgressIndicator(
@@ -292,28 +301,72 @@ fun ConfirmPurchaseScreen(
                             coroutineScope.launch {
                                 isLoading = true
                                 apiMessage = ""
-                                MpesaPaymentHelper.stkPush(
-                                    phone = mpesaPhoneNumber,
-                                    amount = packagePrice,
-                                    reference = packageName,
-                                    description = packageDescription
-                                ) { success, error ->
-                                    if (success) {
-                                        apiMessage = "STK Push sent. Check your phone!"
-                                        // Record payment in Firestore
-                                        val payment = PaymentRecord(
-                                            amount = packagePrice,
-                                            reference = packageName,
-                                            description = packageDescription,
-                                            timestamp = System.currentTimeMillis()
-                                        )
-                                        PaymentHistoryRepository.addPaymentRecord(payment) { saved, err ->
-                                            // Optional: show message if you want
+                                try {
+                                    val formattedPhone = if (mpesaPhoneNumber.startsWith("07"))
+                                        "254${mpesaPhoneNumber.drop(1)}"
+                                    else mpesaPhoneNumber
+                                    val request = MpesaRequest(
+                                        phone_number = formattedPhone,
+                                        amount = packagePrice,
+                                        account_reference = "NjConnect-${System.currentTimeMillis()}",
+                                        description = packageDescription
+                                    )
+                                    val response = RetrofitClient.api.initiateStkPush(request)
+                                    if (response.isSuccessful) {
+                                        val data: MpesaResponse? = response.body()
+                                        val checkoutId = data?.CheckoutRequestID ?: "" // ✅ Define it here
+                                        apiMessage = data?.CustomerMessage ?: "STK push initiated. Awaiting confirmation."
+
+                                        // Wait 6 seconds for Safaricom to send callback
+                                        delay(6000)
+                                        val statusResponse = RetrofitClient.api.getTransactionStatus(checkoutId)
+                                        if (statusResponse.isSuccessful) {
+                                            val tx = statusResponse.body()
+                                            if (tx?.status == "completed") {
+                                                val paymentRecord = PaymentRecord(
+                                                    id = "", // Leave empty, Firestore will assign one
+                                                    phone = tx.phone,
+                                                    receipt = tx.receipt?.toString() ?: "Unknown",
+                                                    amount = tx.amount,
+                                                    reference = "NjConnect-${System.currentTimeMillis()}", // Or tx.reference if available
+                                                    description = tx.description,
+                                                    status = tx.status.uppercase(),
+                                                    userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+                                                )
+
+                                                PaymentHistoryRepository.addPaymentRecord(paymentRecord) { success, error ->
+                                                    if (!success) {
+                                                        Log.e("ConfirmPurchase", "Failed to save payment: $error")
+                                                    }
+                                                }
+                                                apiMessage = "Payment successful: ${tx.receipt}"
+                                                saveToFirestore(tx) // Optional
+                                                // ✅ Add this:
+                                                HistoryViewModel.RecordSessionPayment(
+                                                    sessionId = tx.receipt ?: "TX-${System.currentTimeMillis()}",
+                                                    packageName = packageName,
+                                                    amount = packagePrice,
+                                                    validityDays = 1, // or derive from package info
+                                                    isActive = true
+                                                )
+                                                navController.navigate("payment_success")
+                                            } else {
+                                                apiMessage = "Payment not completed yet. Try again shortly."
+                                            }
+                                        } else {
+                                            apiMessage = "Error checking status: ${statusResponse.code()}"
                                         }
-                                        onPurchaseConfirmed()
+                                        navController.navigate("payment_success") // 👈 Navigate to success screen
                                     } else {
-                                        apiMessage = error ?: "Unknown error. Try again."
+                                        apiMessage = "Error: ${response.errorBody()?.string()}"
                                     }
+                                } catch (e: IOException) {
+                                    apiMessage = "Network error: ${e.localizedMessage}"
+                                } catch (e: HttpException) {
+                                    apiMessage = "HTTP error: ${e.localizedMessage}"
+                                } catch (e: Exception) {
+                                    apiMessage = "Unexpected error: ${e.localizedMessage}"
+                                } finally {
                                     isLoading = false
                                 }
                             }
@@ -351,7 +404,6 @@ fun ConfirmPurchaseScreen(
                     }
                 }
 
-                // Show API message
                 if (apiMessage.isNotBlank()) {
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
@@ -369,41 +421,3 @@ fun ConfirmPurchaseScreen(
     }
 }
 
-private fun PaymentHistoryRepository.addPaymentRecord(
-    record: PaymentRecord,
-    function: Any
-) {
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewConfirmPurchaseScreenDailyEssential() {
-    val historyViewModel = null
-    ConfirmPurchaseScreen(
-        packageName = "Daily Essential",
-        packageDescription = "Great for work and social media",
-        packageDuration = "1d",
-        packageAccess = "2.0GB",
-        packagePrice = 150.0,
-        onBackClicked = { },
-        onPurchaseConfirmed = { },
-        onCancel = { },
-        historyViewModel = historyViewModel
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewConfirmPurchaseScreenBusinessPackage(historyViewModel: HistoryViewModel) {
-    ConfirmPurchaseScreen(
-        packageName = "Business Package",
-        packageDescription = "Premium unlimited access for businesses",
-        packageDuration = "14d",
-        packageAccess = "Unlimited",
-        packagePrice = 1200.0,
-        onBackClicked = { },
-        onPurchaseConfirmed = { },
-        onCancel = { },
-        historyViewModel = historyViewModel
-    )
-}

@@ -41,6 +41,23 @@ android {
 }
 
 dependencies {
+    // Lifecycle components
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
+    implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
+
+    // Retrofit for networking
+    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
+
+// Gson Converter for Retrofit (to parse JSON)
+    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+
+// Coroutines for async network calls
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+// OkHttp Logging Interceptor (optional, for debugging HTTP calls)
+    implementation ("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.11")
+
     // Navigation
     implementation("androidx.navigation:navigation-compose:2.7.7")
 

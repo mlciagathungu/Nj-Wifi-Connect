@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.njwi_ficonnect.presentation.viewmodel.ProfileViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -19,6 +20,10 @@ fun EditProfileScreen(
     var name by remember { mutableStateOf(profileViewModel.userProfile.name) }
     var phone by remember { mutableStateOf(profileViewModel.userProfile.phone) }
     var email by remember { mutableStateOf(profileViewModel.userProfile.email) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+
+
 
     // Update text fields if profile changes externally (e.g. after reload)
     LaunchedEffect(profileViewModel.userProfile) {
@@ -37,7 +42,9 @@ fun EditProfileScreen(
                     }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -83,7 +90,13 @@ fun EditProfileScreen(
                 onClick = {
                     profileViewModel.updateProfile(
                         name.trim(), phone.trim(), email.trim(),
-                        onSuccess = onBack // Go back on success
+                        onSuccess = {
+                            profileViewModel.loadUserProfile() // 🔁 reload
+                            coroutineScope.launch{
+                                snackbarHostState.showSnackbar("Profile saved")
+                            }
+                            onBack() // Navigate back
+                        }// Go back on success
                     )
                 },
                 enabled = !profileViewModel.isUpdating

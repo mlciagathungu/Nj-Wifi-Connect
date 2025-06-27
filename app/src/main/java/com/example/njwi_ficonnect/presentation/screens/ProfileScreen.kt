@@ -1,5 +1,6 @@
 package com.example.njwi_ficonnect.presentation.screens
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -16,6 +17,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,6 +28,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.compose.rememberNavController
+import com.example.njwi_ficonnect.firebase.UserProfileRepository
+import com.example.njwi_ficonnect.presentation.components.AuthViewModel
 import com.example.njwi_ficonnect.presentation.navigation.BottomNavigationBar
 import com.example.njwi_ficonnect.presentation.navigation.Routes
 import com.example.njwi_ficonnect.presentation.viewmodel.ProfileViewModel
@@ -40,6 +45,7 @@ val ProfileCardGreen = Color(0xFF69D56F)
 @Composable
 fun ProfileScreen(
     profileViewModel: ProfileViewModel,
+    authViewModel:AuthViewModel,
     onEditProfileClicked: () -> Unit,
     onSecurityClicked: () -> Unit,
     onNotificationsSettingsClicked: () -> Unit,
@@ -59,6 +65,8 @@ fun ProfileScreen(
 
     val userProfile by remember { derivedStateOf { profileViewModel.userProfile } }
     var refreshing by remember { mutableStateOf(false) }
+    val navController = rememberNavController() // ✅ Or pass it in as a parameter
+
 
     // Pull-to-refresh simulation for profile reload
     fun refreshProfile() {
@@ -288,6 +296,31 @@ fun ProfileScreen(
                     }
                 }
                 Spacer(modifier = Modifier.height(24.dp))
+                Button(
+                    onClick = {
+                        UserProfileRepository.deleteUserProfile { success, error ->
+                            if (success) {
+                                // Navigate to login screen or logout
+                                navController.navigate(Routes.AUTH) {
+                                    popUpTo(Routes.HOME) { inclusive = true }
+                                }
+
+                            } else {
+                                Log.e("Delete", "Error: $error")
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                ) {
+                    Text("Delete My Profile")
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+//                Button(onClick = { authViewModel.checkEmailVerification() }) {
+//                    Text("I've Verified My Email")
+//                }
+//
+
+
             }
 
             item {
@@ -402,6 +435,7 @@ fun PreviewProfileScreen() {
         onNavigateToPackages = { /* preview */ },
         onNavigateToHistory = { /* preview */ },
         onNavigateToProfile = { /* preview */ },
-        selectedRoute = Routes.PROFILE
+        selectedRoute = Routes.PROFILE,
+        authViewModel = TODO()
     )
 }

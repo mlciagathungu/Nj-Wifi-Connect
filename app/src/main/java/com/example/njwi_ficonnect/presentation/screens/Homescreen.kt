@@ -16,7 +16,10 @@ import com.example.njwi_ficonnect.R
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.ui.Alignment
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.njwi_ficonnect.presentation.navigation.BottomNavigationBar
+import com.example.njwi_ficonnect.presentation.viewmodel.PackageHistoryViewModel
+import com.example.njwi_ficonnect.presentation.viewmodel.ProfileViewModel
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.*
@@ -30,7 +33,8 @@ val GreenAccent = Color(0xFF4CAF50)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    userName: String = "User",
+    profileViewModel: ProfileViewModel = viewModel(), // 👈 Add this
+    packageHistoryViewModel: PackageHistoryViewModel,
     onBrowsePackagesClicked: () -> Unit = {},
     onMySubscriptionsClicked: () -> Unit = {},
     onAccountSettingsClicked: () -> Unit = {},
@@ -41,8 +45,14 @@ fun HomeScreen(
     selectedRoute: String = "home",
     hasActiveSubscription: Boolean = false,
     activePackageName: String = "",
-    activePackageExpiry: Long = 0L
-) {
+    activePackageExpiry: Long = 0L,
+) {val activeCount = packageHistoryViewModel.activeCount
+    val expiredCount = packageHistoryViewModel.expiredCount
+    val isLoading = packageHistoryViewModel.isLoading
+    val errorMessage = packageHistoryViewModel.errorMessage
+
+
+
     var currentTimeMillis by remember { mutableStateOf(System.currentTimeMillis()) }
 
     // Update time every second
@@ -60,6 +70,8 @@ fun HomeScreen(
     val dateText = remember(dateObj) {
         SimpleDateFormat("d/M/yyyy", Locale.getDefault()).format(dateObj)
     }
+    val displayName = profileViewModel.userProfile.getDisplayName()
+
 
     Scaffold(
         topBar = {
@@ -72,7 +84,7 @@ fun HomeScreen(
                     ) {
                         Column {
                             Text(
-                                text = "Welcome back, $userName",
+                                text = "Welcome back, $displayName",
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.Black
@@ -193,6 +205,60 @@ fun HomeScreen(
                     }
                 }
             }
+            item {
+                Text(
+                    text = "My Activation Summary",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    elevation = CardDefaults.cardElevation(4.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text("Active Packages: $activeCount", color = GreenAccent, fontSize = 16.sp)
+                        Text("Expired Packages: $expiredCount", color = Color.Gray, fontSize = 16.sp)
+                    }
+                }
+            }
+
+            item {
+                Button(
+                    onClick = { packageHistoryViewModel.refresh() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("Refresh Activation History")
+                }
+            }
+
+            if (isLoading) {
+                item {
+                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                }
+            }
+
+            errorMessage?.let { error ->
+                item {
+                    Text(
+                        text = "Error: $error",
+                        color = Color.Red,
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
+                }
+            }
+
             item {
                 // Statistics row
                 Row(
@@ -405,7 +471,6 @@ fun WhyChooseItem(
 @Composable
 fun PreviewHomeScreen() {
     HomeScreen(
-        userName = "Mlcia",
         onBrowsePackagesClicked = {},
         onMySubscriptionsClicked = {},
         onAccountSettingsClicked = {},
@@ -416,6 +481,7 @@ fun PreviewHomeScreen() {
         selectedRoute = "home",
         hasActiveSubscription = true,
         activePackageName = "Business Package",
-        activePackageExpiry = System.currentTimeMillis() + 3 * 24 * 60 * 60 * 1000 // 3 days from now
+        activePackageExpiry = System.currentTimeMillis() + 3 * 24 * 60 * 60 * 1000,
+        packageHistoryViewModel = TODO() // 3 days from now
     )
 }

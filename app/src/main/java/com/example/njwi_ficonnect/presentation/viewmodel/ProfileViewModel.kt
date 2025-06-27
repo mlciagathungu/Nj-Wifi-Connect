@@ -6,14 +6,17 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.example.njwi_ficonnect.firebase.UserProfile
 import com.example.njwi_ficonnect.firebase.UserProfileRepository
+import com.example.njwi_ficonnect.firebase.UserProfileResult
 
 open class ProfileViewModel : ViewModel() {
-    // Use Compose state so UI auto-updates
+
+    // Correct type: UserProfile instead of UserProfileResult
     var userProfile by mutableStateOf(UserProfile())
         private set
 
     var isUpdating by mutableStateOf(false)
         private set
+
     var errorMessage by mutableStateOf<String?>(null)
         private set
 
@@ -24,13 +27,19 @@ open class ProfileViewModel : ViewModel() {
     fun loadUserProfile() {
         isUpdating = true
         errorMessage = null
-        UserProfileRepository.getUserProfile { profile ->
-            isUpdating = false
-            if (profile != null) {
-                userProfile = profile
-            } else {
-                errorMessage = "Failed to load profile."
+        UserProfileRepository.getUserProfile { result ->
+            when (result) {
+                is UserProfileResult.Success -> {
+                    userProfile = result.profile // ✅ Assign actual profile
+                }
+                is UserProfileResult.Error -> {
+                    errorMessage = result.message
+                }
+                else -> {
+                    // Optional: handle loading state
+                }
             }
+            isUpdating = false
         }
     }
 
@@ -39,13 +48,16 @@ open class ProfileViewModel : ViewModel() {
             errorMessage = "All fields are required."
             return
         }
+
         isUpdating = true
         errorMessage = null
-        val profile = UserProfile(name, phone, email)
+
+        val profile = UserProfile(name = name, phone = phone, email = email)
+
         UserProfileRepository.saveUserProfile(profile) { success, error ->
             isUpdating = false
             if (success) {
-                userProfile = profile
+                userProfile = profile // ✅ Update UI state
                 onSuccess()
             } else {
                 errorMessage = error ?: "Failed to update profile."
@@ -53,3 +65,4 @@ open class ProfileViewModel : ViewModel() {
         }
     }
 }
+

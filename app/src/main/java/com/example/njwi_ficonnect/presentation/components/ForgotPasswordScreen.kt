@@ -25,6 +25,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,6 +43,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController // <-- Add this import
+import com.example.njwi_ficonnect.presentation.components.AuthViewModel
 
 // Consistent primary colors
 val o_color = Color(0xFFDED826)
@@ -51,9 +53,15 @@ val f_color = Color(0xFF23EC08)
 fun ForgotPasswordScreen(
     navController: NavHostController,
     onResetPasswordClicked: (String) -> Unit,
-    onBackToLoginClicked: () -> Unit
-) {
+    onBackToLoginClicked: () -> Unit,
+    authViewModel:AuthViewModel,
+
+    ) {
+
     var identifier by remember { mutableStateOf("") }
+    val authState by authViewModel.authState.collectAsState()
+    val isLoading by authViewModel.isLoading.collectAsState()
+    val errorMessage by authViewModel.errorMessage.collectAsState()
 
     Surface(
         modifier = Modifier
@@ -119,7 +127,7 @@ fun ForgotPasswordScreen(
                     Spacer(modifier = Modifier.height(24.dp))
 
                     Button(
-                        onClick = { onResetPasswordClicked(identifier) },
+                        onClick = {authViewModel.sendPasswordReset(identifier)},
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp),
@@ -146,6 +154,25 @@ fun ForgotPasswordScreen(
                             )
                         }
                     }
+                    when (val state = authState) {
+                        is AuthState.Success -> {
+                            state.message?.let {
+                                Text(text = it, color = Color.Green)
+                            }
+                        }
+
+                        is AuthState.Error -> {
+                            Text(text = state.message, color = Color.Red)
+                        }
+
+                        is AuthState.Loading -> {
+                            Text("Sending reset link...", color = Color.Gray)
+                        }
+
+                        else -> {}
+                    }
+
+
                 }
             }
 
@@ -161,9 +188,4 @@ fun ForgotPasswordScreen(
 @Preview(showBackground = true)
 @Composable
 fun PreviewForgotPasswordScreen() {
-    ForgotPasswordScreen(
-        navController = rememberNavController(),
-        onResetPasswordClicked = { id -> println("Reset password requested for: $id") },
-        onBackToLoginClicked = { println("Back to Login clicked") }
-    )
 }
